@@ -1874,14 +1874,19 @@
     btn.textContent = 'Sending…';
     btn.disabled = true;
 
+    const locationVal = form.elements['location'].value.trim();
+    const messageVal  = form.elements['message'].value.trim();
+    const combinedMsg = (locationVal ? 'Sign location: ' + locationVal + '\n\n' : '')
+                      + (messageVal  ? messageVal : '');
+
     const params = new URLSearchParams();
     params.append('form-name', 'quote');
     params.append('name',     form.elements['name'].value);
     params.append('business', form.elements['business'].value);
     params.append('phone',    form.elements['phone'].value);
     params.append('email',    form.elements['email'].value);
-    params.append('location', form.elements['location'].value);
-    params.append('message',  form.elements['message'].value);
+    params.append('location', locationVal);
+    params.append('message',  combinedMsg);
 
     fetch('/', {
       method: 'POST',
