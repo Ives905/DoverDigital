@@ -1874,12 +1874,19 @@
     btn.textContent = 'Sending…';
     btn.disabled = true;
 
-    const data = new FormData(form);
+    const params = new URLSearchParams();
+    params.append('form-name', 'quote');
+    params.append('name',     form.elements['name'].value);
+    params.append('business', form.elements['business'].value);
+    params.append('phone',    form.elements['phone'].value);
+    params.append('email',    form.elements['email'].value);
+    params.append('location', form.elements['location'].value);
+    params.append('message',  form.elements['message'].value);
 
     fetch('/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(data).toString()
+      body: params.toString()
     })
     .then(() => {
       gtag('event', 'conversion', {
