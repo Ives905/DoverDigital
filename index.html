@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dover Digital Signs — Customer Tracker</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --ink:#1c2430;
@@ -197,8 +197,9 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PHOTO_BUCKET = "reader-board-photos";
 /* ========================================================= */
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const configured = !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
+const sb = (typeof window.supabase !== 'undefined') ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const configured = !!sb && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
+const libraryFailedToLoad = typeof window.supabase === 'undefined';
 
 const state = {
   customers: [],
@@ -405,10 +406,11 @@ async function deleteContact(id){
 function render(){
   const root = document.getElementById('root');
   if(!configured){
-    root.innerHTML = headerHtml() + `<main><div class="errbox">
-      This app isn't connected to a database yet. Open <code>index.html</code> and fill in
-      <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the file.
-    </div></main>`;
+    const msg = libraryFailedToLoad
+      ? `Couldn't load a required file from the internet (the Supabase library). Check your internet connection and reload the page. If this keeps happening, the CDN link in the code may need updating.`
+      : `This app isn't connected to a database yet. Open <code>index.html</code> and fill in
+      <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the file.`;
+    root.innerHTML = headerHtml() + `<main><div class="errbox">${msg}</div></main>`;
     bindHeaderEvents();
     return;
   }
