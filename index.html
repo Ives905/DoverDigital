@@ -1,1913 +1,875 @@
 <!DOCTYPE html>
-<html lang="en-CA">
+<html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18102235966"></script>
-  <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-18102235966');
-  </script>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Primary SEO -->
-  <title>Dover Digital Signs | LED Digital Message Boards – Hamilton, Ontario</title>
-  <meta name="description" content="Dover Digital Signs sells and installs full-colour LED digital message boards and billboards for small businesses across Hamilton, Burlington, Brantford and Southern Ontario. Best prices guaranteed. Get a free quote today.">
-  <meta name="keywords" content="LED digital signs Hamilton Ontario, digital message boards Hamilton, outdoor LED signs Ontario, church digital signs, digital billboard installation Hamilton, LED signs Burlington, LED signs Brantford, digital signs Southern Ontario, business signs Hamilton">
-  <meta name="robots" content="index, follow">
-  <meta name="author" content="Dover Digital Signs">
-  <link rel="canonical" href="https://www.doverdigitalsigns.com/">
-  <meta name="google-site-verification" content="4q87mLHl3-7LxeQgYVyMnwgBn1__IP4Z7ueAsZMoi_s" />
-  <link rel="icon" type="image/png" href="/images/DDSLogo.png">
-  <link rel="apple-touch-icon" href="/images/DDSLogo.png">
-
-  <!-- Geo targeting -->
-  <meta name="geo.region" content="CA-ON">
-  <meta name="geo.placename" content="Hamilton, Ontario">
-  <meta name="geo.position" content="43.2557;-79.8711">
-  <meta name="ICBM" content="43.2557, -79.8711">
-
-  <!-- Open Graph (Facebook & social sharing) -->
-  <meta property="og:type" content="business.business">
-  <meta property="og:title" content="Dover Digital Signs | LED Digital Message Boards – Hamilton, Ontario">
-  <meta property="og:description" content="Full-colour LED digital message boards and billboard installations for Ontario small businesses. Best prices guaranteed. Serving Hamilton, Burlington, Brantford and all of Southern Ontario.">
-  <meta property="og:url" content="https://www.doverdigitalsigns.com/">
-  <meta property="og:image" content="https://www.doverdigitalsigns.com/images/RHVP.jpg">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:site_name" content="Dover Digital Signs">
-  <meta property="og:locale" content="en_CA">
-  <meta property="business:contact_data:street_address" content="Port Dover">
-  <meta property="business:contact_data:locality" content="Port Dover">
-  <meta property="business:contact_data:region" content="Ontario">
-  <meta property="business:contact_data:country_name" content="Canada">
-  <meta property="business:contact_data:phone_number" content="+19059063900">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Dover Digital Signs | LED Message Boards – Hamilton, Ontario">
-  <meta name="twitter:description" content="Full-colour LED digital signs for Ontario small businesses. Best prices guaranteed. Free quote available.">
-  <meta name="twitter:image" content="https://www.doverdigitalsigns.com/images/RHVP.jpg">
-
-  <!-- Local Business Schema Markup -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Dover Digital Signs",
-    "description": "Dover Digital Signs sells and installs full-colour LED digital message boards and billboards for small businesses across Southern Ontario. Best prices guaranteed.",
-    "url": "https://www.doverdigitalsigns.com",
-    "telephone": "+1-905-906-3900",
-    "email": "simon@doverdigitalsigns.com",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Port Dover",
-      "addressRegion": "Ontario",
-      "addressCountry": "CA"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 42.7862,
-      "longitude": -80.2003
-    },
-    "areaServed": [
-      "Hamilton", "Burlington", "Brantford", "Oakville", "Grimsby",
-      "St. Catharines", "Niagara Falls", "Cambridge", "Kitchener",
-      "Waterloo", "Guelph", "Simcoe", "Port Dover", "Caledonia",
-      "Hagersville", "Dunnville", "Welland", "Milton", "Mississauga"
-    ],
-    "priceRange": "$$",
-    "openingHours": "Mo-Fr 08:00-18:00",
-    "sameAs": [
-      "https://www.facebook.com/DoverDigitalSigns"
-    ],
-    "hasOfferCatalog": {
-      "@type": "OfferCatalog",
-      "name": "LED Digital Sign Products",
-      "itemListElement": [
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Outdoor LED Message Boards"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Church Digital Message Boards"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Pylon & Monument Signs"
-          }
-        },
-        {
-          "@type": "Offer",
-          "itemOffered": {
-            "@type": "Service",
-            "name": "Window & Wall Digital Displays"
-          }
-        }
-      ]
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dover Digital Signs — Customer Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --ink:#1c2430;
+    --muted:#6b7480;
+    --paper:#f6f4ef;
+    --panel:#ffffff;
+    --navy:#111827;
+    --navy-2:#1c2940;
+    --line:#e4e0d6;
+    --amber:#f2a71b;
+    --amber-glow: 0 0 0 1px rgba(242,167,27,.5), 0 0 14px rgba(242,167,27,.55);
+    --overdue:#d9542a;
+    --overdue-glow: 0 0 0 1px rgba(217,84,42,.55), 0 0 14px rgba(217,84,42,.5);
+    --good:#3f7a5c;
+    --radius:10px;
   }
-  </script>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .mono{ font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; letter-spacing:.02em; }
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      /* Brand */
-      --amber: #1e8b0e;
-      --amber-light: #28b310;
-      --amber-glow: rgba(30, 139, 14, 0.25);
+  header{
+    background:linear-gradient(180deg,var(--navy),var(--navy-2));
+    color:#f4f1ea;
+    padding:18px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .mark{
+    width:34px;height:22px;border-radius:3px;
+    background:#0b0f16;
+    border:1px solid #333;
+    display:grid;grid-template-columns:repeat(6,1fr);gap:2px;
+    padding:3px;
+  }
+  .brand .mark span{ background:var(--amber); border-radius:1px; opacity:.85; }
+  .brand .mark span:nth-child(3),.brand .mark span:nth-child(7),.brand .mark span:nth-child(10){opacity:.3;}
+  .brand h1{ font-size:16px; margin:0; font-weight:700; letter-spacing:.01em;}
+  .brand .sub{ font-size:11.5px; color:#b9c2cf; margin-top:2px; }
 
-      /* Backgrounds */
-      --dark:   #f0fbed;   /* page bg (light mint) */
-      --dark-2: #e8f5e4;   /* alt section bg */
-      --dark-3: #2c3529;   /* dark sections: testimonials, financing, FAQ, contact */
-      --dark-4: #3a4436;   /* darker variant */
-      --body-bg: #f0fbed;
-      --alt-bg:  #e8f5e4;
-      --nav-bg:  #2c3529;
-      --footer-bg: #1a1f18;
-      --card-bg: #ffffff;
-      --border:  #c2d9be;
+  .who{ display:flex; align-items:center; gap:10px; font-size:13px; color:#dfe4ea;}
+  .who input{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    color:#fff; border-radius:6px; padding:6px 8px; font-size:13px; width:130px;
+  }
 
-      /* Text on LIGHT backgrounds */
-      --text-dark:        #1a1f18;
-      --text-muted:       #4a5e47;
-      --text-faint:       #6b7d67;
+  nav{
+    display:flex; gap:2px; background:var(--navy-2); padding:0 22px;
+  }
+  nav button{
+    background:transparent; border:none; color:#c7cedb; padding:10px 16px;
+    font-size:13.5px; cursor:pointer; border-bottom:2px solid transparent; font-weight:600;
+  }
+  nav button.active{ color:#fff; border-bottom-color:var(--amber); }
 
-      /* Text on DARK backgrounds (dark-3, dark-4, nav, footer) */
-      --text-light:       #ffffff;
-      --text-light-muted: rgba(255, 255, 255, 0.75);
-      --text-light-faint: rgba(255, 255, 255, 0.50);
+  .toolbar{
+    display:flex; gap:10px; align-items:center; padding:14px 22px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line); background:var(--panel);
+  }
+  .toolbar input[type=text], .toolbar select{
+    padding:8px 10px; border:1px solid var(--line); border-radius:7px; font-size:13.5px;
+    background:#fff;
+  }
+  .toolbar input[type=text]{ min-width:220px; flex:1; }
+  .btn{
+    background:var(--navy); color:#fff; border:none; padding:9px 14px;
+    border-radius:7px; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .btn.amber{ background:var(--amber); color:#3a2a06; }
+  .btn.ghost{ background:transparent; color:var(--navy); border:1px solid var(--line); }
+  .btn.small{ padding:5px 10px; font-size:12.5px; }
+  .btn.danger{ background:transparent; color:var(--overdue); border:1px solid rgba(217,84,42,.4);}
+  .btn:disabled{ opacity:.6; cursor:default; }
+  a.btn{ display:inline-block; text-decoration:none; }
 
-      /* Legacy aliases — keep so existing references don't break on light sections */
-      --white:      #1a1f18;   /* = text-dark */
-      --grey:       #4a5e47;   /* = text-muted */
-      --light-grey: #6b7d67;   /* = text-faint */
-      --nav-text:   #d4edcf;
-    }
+  main{ padding:18px 22px 60px; max-width:1180px; margin:0 auto; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .layout{ display:grid; grid-template-columns:340px 1fr; gap:18px; align-items:start; }
+  @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
 
-    html { scroll-behavior: smooth; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); }
+  .list{ max-height:74vh; overflow:auto; }
+  .cust-item{
+    padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer;
+  }
+  .cust-item:hover{ background:#faf8f3; }
+  .cust-item.sel{ background:#fdf3df; }
+  .cust-item .name{ font-weight:700; font-size:14px; }
+  .cust-item .addr{ font-size:12px; color:var(--muted); margin-top:2px;}
+  .tag{
+    display:inline-block; font-size:10.5px; padding:2px 6px; border-radius:20px;
+    background:#eef1f5; color:var(--muted); margin-top:5px; margin-right:4px; font-weight:600;
+  }
+  .folder-chip{
+    display:inline-block; padding:6px 13px; border-radius:20px; background:#eef1f5; color:var(--navy);
+    font-size:12.5px; font-weight:600; cursor:pointer; border:1px solid var(--line);
+  }
+  .folder-chip.active{ background:var(--amber); color:#3a2a06; border-color:var(--amber); box-shadow:var(--amber-glow); }
+  .folder-chips{ display:flex; gap:8px; flex-wrap:wrap; padding:12px 22px 0; }
+  .empty{ padding:30px 16px; color:var(--muted); font-size:13.5px; text-align:center; }
+  .errbox{ padding:14px 16px; background:#fdece5; color:#8a2f10; border-radius:8px; font-size:13px; margin-bottom:14px; }
 
-    body {
-      background: var(--body-bg);
-      color: var(--white);
-      font-family: 'Barlow', sans-serif;
-      font-size: 17px;
-      line-height: 1.65;
-      overflow-x: hidden;
-    }
+  .detail{ padding:18px; }
+  .detail h2{ margin:0 0 2px; font-size:19px; }
+  .detail .addr-line{ color:var(--muted); font-size:13.5px; margin-bottom:12px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; margin:10px 0 16px; }
+  .field label{ display:block; font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px;}
+  .field input, .field textarea{
+    width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:13.5px;
+    background:#fff;
+  }
+  .field textarea{ resize:vertical; min-height:32px; }
+  .row-actions{ display:flex; gap:8px; margin-top:6px; }
 
-    /* ─── UTILITY ─── */
-    .container { max-width: 1160px; margin: 0 auto; padding: 0 28px; }
-    .section-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 18px;
-      display: block;
-    }
-    h1, h2, h3 { font-family: 'Bebas Neue', sans-serif; line-height: 1.05; letter-spacing: 1px; }
-    h1 { font-size: clamp(64px, 10vw, 128px); }
-    h2 { font-size: clamp(42px, 6vw, 72px); }
-    h3 { font-size: clamp(28px, 3vw, 38px); }
-    .amber { color: var(--amber); }
+  .section-title{
+    font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);
+    font-weight:700; margin:22px 0 8px; display:flex; align-items:center; justify-content:space-between;
+  }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 16px 36px;
-      border-radius: 4px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s ease;
-    }
-    .btn-primary {
-      background: var(--amber);
-      color: #ffffff;
-      box-shadow: 0 0 32px var(--amber-glow);
-    }
-    .btn-primary:hover {
-      background: var(--amber-light);
-      box-shadow: 0 0 48px rgba(30,139,14,0.5);
-      transform: translateY(-2px);
-    }
-    .btn-outline {
-      background: transparent;
-      color: var(--white);
-      border: 2px solid rgba(255,255,255,0.3);
-    }
-    .btn-outline:hover {
-      border-color: var(--amber);
-      color: var(--amber);
-      transform: translateY(-2px);
-    }
+  .contact-card{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:8px; background:#fff;
+  }
+  .contact-card .cname{ font-weight:700; font-size:13.5px; }
+  .contact-card .clinks{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:3px; }
+  .contact-card .clinks a, .contact-card .clinks span{ font-size:12px; color:var(--navy); text-decoration:none; }
+  .contact-card .clinks a{ background:#eef1f5; padding:3px 8px; border-radius:6px; }
+  .add-contact{ border:1px dashed var(--line); border-radius:8px; padding:10px 12px; background:#fbfaf6; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; }
+  .add-contact input{ padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; }
 
-    /* ─── NAV ─── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 0 28px;
-      transition: all 0.3s ease;
-    }
-    nav.scrolled {
-      background: rgba(240,251,237,0.97);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(30,139,14,0.15);
-      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-    }
-    .nav-inner {
-      max-width: 1160px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 72px;
-    }
-    .nav-logo {
-      display: flex;
-      flex-direction: column;
-      line-height: 1;
-      text-decoration: none;
-    }
-    .nav-logo-main {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 26px;
-      color: var(--white);
-      letter-spacing: 2px;
-    }
-    .nav-logo-sub {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 36px;
-      list-style: none;
-    }
-    .nav-links a {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--light-grey);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--amber); }
-    .nav-cta { font-size: 14px !important; padding: 10px 24px !important; color: #ffffff !important; }
+  .note{
+    border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:10px; background:#fffdf9;
+  }
+  .note .meta{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+  .note .text{ font-size:13.5px; line-height:1.45; white-space:pre-wrap; }
+  .badge{
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size:11px; padding:3px 8px; border-radius:5px; font-weight:700; letter-spacing:.03em;
+  }
+  .badge.upcoming{ background:#fff7e6; color:#8a5a00; box-shadow:var(--amber-glow); }
+  .badge.overdue{ background:#fdece5; color:#8a2f10; box-shadow:var(--overdue-glow); }
+  .badge.done{ background:#eaf3ee; color:var(--good); }
+  .photos{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .photos img{ width:74px; height:74px; object-fit:cover; border-radius:6px; border:1px solid var(--line); cursor:pointer; }
 
-    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
-    .hamburger span { display: block; width: 24px; height: 2px; background: #ffffff; transition: all 0.3s; }
+  .newnote{ border:1px dashed var(--line); border-radius:8px; padding:12px 14px; background:#fbfaf6; }
+  .newnote textarea{ width:100%; min-height:60px; border:1px solid var(--line); border-radius:6px; padding:8px; font-size:13.5px; font-family:inherit; }
+  .newnote .row{ display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; align-items:center; }
+  .newnote input[type=date]{ padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; }
+  .newnote input[type=file]{ font-size:12px; }
 
-    /* ─── HERO ─── */
-    #hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-      padding-top: 72px;
-    }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,139,14,0.10) 0%, transparent 65%),
-        radial-gradient(ellipse 50% 80% at 20% 80%, rgba(30,139,14,0.06) 0%, transparent 60%),
-        linear-gradient(180deg, var(--dark) 0%, var(--dark-2) 100%);
-    }
-    .hero-grid {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(30,139,14,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(30,139,14,0.04) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, black 30%, transparent 80%);
-    }
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      padding: 80px 0 100px;
-    }
-    .hero-top {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 56px;
-      align-items: center;
-      margin-bottom: 56px;
-    }
-    .hero-image-wrap {
-      position: relative;
-      border-radius: 8px;
-      overflow: hidden;
-      aspect-ratio: 4/3;
-      box-shadow: 0 24px 64px rgba(30,139,14,0.15), 0 4px 16px rgba(0,0,0,0.12);
-    }
-    .hero-image-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .hero-image-badge {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      background: var(--amber);
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 3px;
-    }
-    .hero-image-border {
-      position: absolute;
-      inset: 0;
-      border: 1px solid rgba(30,139,14,0.2);
-      border-radius: 8px;
-      pointer-events: none;
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-    .hero-eyebrow-line {
-      width: 40px;
-      height: 2px;
-      background: var(--amber);
-    }
-    .hero-eyebrow-text {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-    }
-    .hero-headline {
-      margin-bottom: 28px;
-    }
-    .hero-headline em {
-      font-style: normal;
-      color: var(--amber);
-      position: relative;
-    }
-    .hero-sub {
-      font-size: 20px;
-      color: var(--text-muted);
-      max-width: 560px;
-      margin-bottom: 48px;
-      line-height: 1.6;
-    }
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .hero-phone {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--text-muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    .hero-phone:hover { color: var(--amber); }
-    .hero-phone-icon {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      border: 1px solid rgba(30,139,14,0.4);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-    .hero-stats {
-      display: flex;
-      gap: 48px;
-      margin-top: 80px;
-      padding-top: 48px;
-      border-top: 1px solid var(--border);
-    }
-    .hero-stat-num {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 52px;
-      color: var(--amber);
-      line-height: 1;
-    }
-    .hero-stat-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 13px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
+  .followup-row{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    padding:14px 16px; border-bottom:1px solid var(--line);
+  }
+  .followup-row:last-child{ border-bottom:none; }
+  .followup-row .co{ font-weight:700; font-size:14px; }
+  .followup-row .snippet{ font-size:12.5px; color:var(--muted); margin-top:3px; max-width:520px;}
 
-    /* ─── LED TICKER ─── */
-    .ticker {
-      background: var(--nav-bg);
-      border-top: 1px solid rgba(30,139,14,0.2);
-      border-bottom: 1px solid rgba(30,139,14,0.2);
-      padding: 14px 0;
-      overflow: hidden;
-      position: relative;
-    }
-    .ticker-track {
-      display: flex;
-      animation: ticker 30s linear infinite;
-      width: max-content;
-    }
-    .ticker-item {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      padding: 0 40px;
-      white-space: nowrap;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--amber);
-    }
-    .ticker-dot { width: 5px; height: 5px; background: var(--amber); border-radius: 50%; opacity: 0.5; }
-    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .modal-bg{ position:fixed; inset:0; background:rgba(15,20,26,.55); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal{ background:#fff; border-radius:10px; padding:20px 22px; width:100%; max-width:520px; max-height:88vh; overflow:auto;}
+  .modal h3{ margin-top:0; }
+  .lightbox{ position:fixed; inset:0; background:rgba(10,12,16,.85); display:flex; align-items:center; justify-content:center; z-index:60; cursor:zoom-out;}
+  .lightbox img{ max-width:90vw; max-height:90vh; border-radius:6px; }
 
-    /* ─── WHY DIGITAL ─── */
-    #why {
-      padding: 120px 0;
-      background: var(--dark-2);
-    }
-    .why-header { margin-bottom: 72px; }
-    .why-header h2 { max-width: 640px; }
-    .why-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-    }
-    .why-card {
-      background: var(--dark-3);
-      padding: 48px 40px;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s;
-    }
-    .why-card::before {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--amber);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-    .why-card:hover::before { transform: scaleX(1); }
-    .why-card:hover { background: var(--dark-4); }
-    .why-icon {
-      font-size: 36px;
-      margin-bottom: 24px;
-      display: block;
-    }
-    .why-card h3 {
-      font-size: 28px;
-      margin-bottom: 14px;
-      color: var(--text-light);
-    }
-    .why-card p { color: var(--text-light-muted); font-size: 16px; line-height: 1.7; }
-    .why-num {
-      position: absolute;
-      top: 24px; right: 28px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 80px;
-      color: rgba(30,139,14,0.08);
-      line-height: 1;
-      pointer-events: none;
-    }
-
-    /* ─── PRODUCTS ─── */
-    #products {
-      padding: 120px 0;
-      background: var(--dark);
-    }
-    .products-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 64px;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 3px;
-    }
-    .product-card {
-      position: relative;
-      overflow: hidden;
-      background: var(--card-bg);
-      aspect-ratio: 4/3;
-      cursor: pointer;
-    }
-    .product-card-bg {
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      transition: transform 0.5s ease;
-    }
-    .product-card:hover .product-card-bg { transform: scale(1.1); }
-    .product-card-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(10,15,10,0.97) 40%, rgba(10,15,10,0.45) 100%);
-    }
-    .product-card-content {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 36px;
-    }
-    .product-card-tag {
-      display: inline-block;
-      background: var(--amber);
-      color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 2px;
-      margin-bottom: 12px;
-    }
-    .product-card h3 {
-      font-size: 32px;
-      margin-bottom: 8px;
-      color: #ffffff;
-    }
-    .product-card p {
-      color: rgba(255,255,255,0.82);
-      font-size: 15px;
-      line-height: 1.5;
-      max-width: 360px;
-    }
-    .product-card-arrow {
-      position: absolute;
-      top: 28px; right: 28px;
-      width: 40px; height: 40px;
-      border: 1px solid rgba(30,139,14,0.3);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--amber);
-      font-size: 18px;
-      transform: rotate(-45deg);
-      transition: all 0.3s;
-    }
-    .product-card:hover .product-card-arrow {
-      background: var(--amber);
-      color: var(--dark);
-      border-color: var(--amber);
-      transform: rotate(0deg);
-    }
-
-    /* ─── FINANCING ─── */
-    #financing {
-      padding: 120px 0;
-      background: var(--dark-2);
-      position: relative;
-      overflow: hidden;
-    }
-    #financing::before {
-      content: '';
-      position: absolute;
-      top: -200px; right: -200px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(30,139,14,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .financing-header { margin-bottom: 64px; }
-    .financing-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3px;
-    }
-    .financing-card {
-      background: var(--dark-3);
-      padding: 56px 44px;
-      position: relative;
-      transition: transform 0.3s ease;
-    }
-    .financing-card:hover { transform: translateY(-6px); }
-    .financing-card.featured {
-      background: var(--amber);
-    }
-    .financing-card.featured h3,
-    .financing-card.featured p,
-    .financing-card.featured .financing-detail { color: var(--dark) !important; }
-    .financing-card.featured .financing-icon { background: rgba(10,10,12,0.15); }
-    .financing-icon {
-      width: 56px; height: 56px;
-      background: rgba(30,139,14,0.1);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 26px;
-      margin-bottom: 28px;
-    }
-    .financing-card h3 {
-      font-size: 36px;
-      margin-bottom: 14px;
-    }
-    .financing-card p { color: var(--text-light-muted); font-size: 16px; margin-bottom: 28px; }
-    .financing-details { display: flex; flex-direction: column; gap: 10px; }
-    .financing-detail {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--light-grey);
-      letter-spacing: 0.5px;
-    }
-    .financing-check {
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: rgba(30,139,14,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 11px;
-      color: var(--amber);
-      flex-shrink: 0;
-    }
-    .financing-card.featured .financing-check {
-      background: rgba(10,10,12,0.15);
-      color: var(--dark);
-    }
-
-    /* ─── GALLERY ─── */
-    #gallery {
-      padding: 120px 0;
-      background: var(--dark);
-    }
-    .gallery-header { margin-bottom: 64px; }
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 3px;
-    }
-    .gallery-item {
-      background: var(--dark-3);
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .gallery-item:nth-child(1) { grid-column: span 8; grid-row: span 2; min-height: 440px; }
-    .gallery-item:nth-child(2) { grid-column: span 4; min-height: 210px; }
-    .gallery-item:nth-child(3) { grid-column: span 4; min-height: 210px; }
-    .gallery-item:nth-child(4) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(5) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(6) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(7) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(8) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(9) { grid-column: span 4; min-height: 240px; }
-    .gallery-item:nth-child(10) { grid-column: span 3; min-height: 240px; }
-    .gallery-item:nth-child(11) { grid-column: span 3; min-height: 240px; }
-    .gallery-item:nth-child(12) { grid-column: span 3; min-height: 240px; }
-    .gallery-item:nth-child(13) { grid-column: span 3; min-height: 240px; }
-    .gallery-item:nth-child(14) { grid-column: span 12; min-height: 300px; }
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease;
-    }
-    .gallery-item:hover img { transform: scale(1.04); }
-    .gallery-caption {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 16px 20px 14px;
-      background: linear-gradient(to top, rgba(10,10,12,0.92) 0%, transparent 100%);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--white);
-      opacity: 0;
-      transform: translateY(6px);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    .gallery-item:hover .gallery-caption { opacity: 1; transform: translateY(0); }
-
-    /* ─── TESTIMONIALS ─── */
-    #testimonials {
-      padding: 120px 0;
-      background: var(--dark-2);
-    }
-    .testimonials-header { margin-bottom: 64px; }
-    .testimonials-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3px;
-    }
-    .testimonial-card {
-      background: var(--dark-3);
-      padding: 48px 40px;
-      position: relative;
-    }
-    .testimonial-quote-mark {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 80px;
-      color: var(--amber);
-      opacity: 0.2;
-      line-height: 1;
-      margin-bottom: -20px;
-    }
-    .testimonial-text {
-      font-size: 17px;
-      line-height: 1.7;
-      color: var(--text-light-muted);
-      margin-bottom: 32px;
-    }
-    .testimonial-stars {
-      color: var(--amber);
-      font-size: 16px;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-    }
-    .testimonial-author {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .testimonial-avatar {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--dark-4);
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 20px;
-      color: var(--amber);
-      border: 2px solid rgba(30,139,14,0.3);
-    }
-    .testimonial-name {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--text-light);
-    }
-    .testimonial-biz { font-size: 14px; color: var(--text-light-faint); }
-
-    /* ─── ABOUT ─── */
-    #about {
-      padding: 120px 0;
-      background: var(--dark);
-    }
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-    }
-    .about-image-wrap {
-      position: relative;
-    }
-    .about-image {
-      width: 100%;
-      aspect-ratio: 4/5;
-      background: var(--dark-3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 80px;
-      position: relative;
-      overflow: hidden;
-    }
-    .about-image::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 1px solid rgba(30,139,14,0.2);
-    }
-    .about-image-badge {
-      position: absolute;
-      bottom: -20px; right: -20px;
-      background: var(--amber);
-      color: var(--dark);
-      padding: 20px 24px;
-      font-family: 'Bebas Neue', sans-serif;
-    }
-    .about-image-badge-num {
-      font-size: 52px;
-      line-height: 1;
-      display: block;
-    }
-    .about-image-badge-label {
-      font-size: 14px;
-      letter-spacing: 2px;
-    }
-    .about-content h2 { margin-bottom: 24px; }
-    .about-content p { color: var(--text-muted); margin-bottom: 20px; font-size: 17px; line-height: 1.75; }
-    .about-list {
-      list-style: none;
-      margin: 32px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .about-list li {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .about-list-check {
-      color: var(--amber);
-      font-size: 18px;
-    }
-
-    /* ─── SERVICE AREA ─── */
-    #service-area {
-      padding: 80px 0;
-      background: var(--dark-2);
-      border-top: 1px solid rgba(30,139,14,0.1);
-    }
-    .service-area-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 48px;
-      flex-wrap: wrap;
-    }
-    .service-area-text h3 {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-    .service-area-text p { color: var(--text-muted); max-width: 440px; }
-    .service-cities {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .city-chip {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--grey);
-      padding: 8px 18px;
-      border-radius: 100px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      transition: all 0.2s;
-    }
-    .city-chip:hover {
-      border-color: var(--amber);
-      color: var(--amber);
-    }
-
-    /* ─── FAQ ─── */
-    #faq {
-      padding: 120px 0;
-      background: var(--dark);
-    }
-    .faq-header { margin-bottom: 64px; }
-    .faq-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3px;
-    }
-    .faq-item {
-      background: var(--dark-3);
-      padding: 36px 40px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    .faq-item::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: var(--amber);
-      transform: scaleY(0);
-      transform-origin: top;
-      transition: transform 0.3s;
-    }
-    .faq-item:hover::before, .faq-item.open::before { transform: scaleY(1); }
-    .faq-question {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 14px;
-      color: #ffffff;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-    }
-    .faq-toggle {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      border: 1px solid rgba(30,139,14,0.4);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--amber);
-      font-size: 18px;
-      flex-shrink: 0;
-      transition: all 0.3s;
-    }
-    .faq-item.open .faq-toggle { background: var(--amber); color: var(--dark); transform: rotate(45deg); }
-    .faq-answer {
-      font-size: 15px;
-      color: rgba(255, 255, 255, 0.75);
-      line-height: 1.7;
-      display: none;
-    }
-    .faq-item.open .faq-answer { display: block; }
-
-    /* ─── CONTACT ─── */
-    #contact {
-      padding: 120px 0;
-      background: var(--dark-2);
-      position: relative;
-      overflow: hidden;
-    }
-    #contact::before {
-      content: '';
-      position: absolute;
-      bottom: -300px; left: -200px;
-      width: 700px; height: 700px;
-      background: radial-gradient(circle, rgba(30,139,14,0.08) 0%, transparent 65%);
-      pointer-events: none;
-    }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 80px;
-      align-items: start;
-    }
-    .contact-info h2 { margin-bottom: 20px; }
-    .contact-info > p { color: var(--text-muted); font-size: 18px; line-height: 1.7; margin-bottom: 48px; }
-    .contact-methods { display: flex; flex-direction: column; gap: 24px; }
-    .contact-method {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .contact-method-icon {
-      width: 56px; height: 56px;
-      background: rgba(30,139,14,0.1);
-      border: 1px solid rgba(30,139,14,0.2);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .contact-method-label {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 4px;
-    }
-    .contact-method-value {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--white);
-      text-decoration: none;
-    }
-    .contact-method-value:hover { color: var(--amber); }
-    .contact-form-wrap {
-      background: var(--dark-3);
-      padding: 52px;
-      position: relative;
-    }
-    .contact-form-wrap::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--amber), var(--amber-light));
-    }
-    .form-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 32px;
-      margin-bottom: 8px;
-      color: #ffffff;
-    }
-    .form-subtitle { color: var(--text-light-muted); font-size: 15px; margin-bottom: 36px; }
-    .form-group { margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    label {
-      display: block;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.70);
-      margin-bottom: 8px;
-    }
-    input, textarea, select {
-      width: 100%;
-      background: var(--dark-4);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 4px;
-      padding: 14px 18px;
-      color: #ffffff;
-      font-family: 'Barlow', sans-serif;
-      font-size: 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
-      appearance: none;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--amber);
-      box-shadow: 0 0 0 3px rgba(30,139,14,0.1);
-    }
-    textarea { resize: vertical; min-height: 120px; }
-    select { cursor: pointer; }
-    .form-submit { width: 100%; justify-content: center; font-size: 18px; padding: 18px; margin-top: 8px; }
-    .form-note { text-align: center; font-size: 13px; color: var(--text-light-faint); margin-top: 14px; }
-    .form-success {
-      display: none;
-      text-align: center;
-      padding: 40px 24px;
-    }
-    .form-success-icon { font-size: 56px; margin-bottom: 20px; }
-    .form-success h3 { font-size: 36px; margin-bottom: 12px; }
-    .form-success p { color: var(--text-light-muted); }
-
-    /* ─── FOOTER ─── */
-    footer {
-      background: var(--dark);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 60px 0 32px;
-    }
-    .footer-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 48px;
-      flex-wrap: wrap;
-      margin-bottom: 48px;
-    }
-    .footer-logo { margin-bottom: 16px; }
-    .footer-logo-main {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 30px;
-      color: var(--white);
-      letter-spacing: 2px;
-      display: block;
-    }
-    .footer-logo-sub {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 11px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: var(--amber);
-    }
-    .footer-tagline { color: var(--text-muted); font-size: 15px; max-width: 280px; line-height: 1.6; }
-    .footer-nav-col h4 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 20px;
-    }
-    .footer-nav-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .footer-nav-col ul a {
-      color: var(--grey);
-      text-decoration: none;
-      font-size: 15px;
-      transition: color 0.2s;
-    }
-    .footer-nav-col ul a:hover { color: var(--amber); }
-    .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding-top: 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .footer-copy { font-size: 14px; color: var(--text-light-faint); }
-    .footer-bottom-links { display: flex; gap: 24px; }
-    .footer-bottom-links a { font-size: 14px; color: var(--text-light-faint); text-decoration: none; transition: color 0.2s; }
-    .footer-bottom-links a:hover { color: var(--amber); }
-
-    /* ─── FLOATING CTA ─── */
-    .floating-cta {
-      position: fixed;
-      bottom: 32px; right: 32px;
-      z-index: 50;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-    .floating-cta.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
-    .floating-cta .btn-primary { color: #ffffff; }
-
-    /* ─── ANIMATIONS ─── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .reveal.in-view { opacity: 1; transform: translateY(0); }
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 900px) {
-      .why-grid, .financing-grid, .testimonials-grid { grid-template-columns: 1fr; }
-      .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 48px; }
-      .products-grid { grid-template-columns: 1fr; }
-      .faq-grid { grid-template-columns: 1fr; }
-      .gallery-item:nth-child(n) { grid-column: span 12 !important; min-height: 240px; }
-      .nav-links { display: none; }
-      .hamburger { display: flex; }
-      .hero-top { grid-template-columns: 1fr; }
-      .hero-image-wrap { display: none; }
-      .hero-stats { flex-wrap: wrap; gap: 28px; }
-      .about-image-badge { bottom: -10px; right: -10px; }
-      .contact-form-wrap { padding: 36px 28px; }
-      .footer-top { flex-direction: column; }
-      .form-row { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 600px) {
-      .hero-actions { flex-direction: column; align-items: flex-start; }
-      .btn { width: 100%; justify-content: center; }
-      .service-area-inner { flex-direction: column; }
-      .floating-cta { bottom: 16px; right: 16px; }
-    }
-
-    /* mobile nav */
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #2c3529;
-      z-index: 99;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 32px;
-    }
-    .mobile-nav.open { display: flex; }
-    .mobile-nav a {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 48px;
-      color: #ffffff;
-      text-decoration: none;
-      letter-spacing: 2px;
-      transition: color 0.2s;
-    }
-    .mobile-nav a:hover { color: var(--amber); }
-    .mobile-nav-close {
-      position: absolute;
-      top: 28px; right: 28px;
-      font-size: 32px;
-      cursor: pointer;
-      color: #ffffff;
-      z-index: 100;
-      line-height: 1;
-      padding: 8px;
-    }
-  </style>
+  .toast{
+    position:fixed; bottom:18px; right:18px; background:var(--navy); color:#fff; padding:10px 16px;
+    border-radius:8px; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:70;
+  }
+  .loading{ text-align:center; color:var(--muted); padding:40px; font-size:13.5px; }
+</style>
 </head>
 <body>
-
-<!-- Hidden static form for Netlify detection at deploy time -->
-<form name="quote" data-netlify="true" netlify-honeypot="bot-field" style="display:none">
-  <input type="hidden" name="form-name" value="quote" />
-  <input name="bot-field" />
-  <input type="text" name="name" />
-  <input type="text" name="business" />
-  <input type="tel" name="phone" />
-  <input type="email" name="email" />
-  <textarea name="message"></textarea>
-</form>
-
-
-<!-- NAV -->
-<nav id="main-nav">
-  <div class="nav-inner">
-    <a href="#hero" class="nav-logo">
-      <span class="nav-logo-main">Dover Digital Signs</span>
-      <span class="nav-logo-sub">Ontario's Digital Sign Experts</span>
-    </a>
-    <ul class="nav-links">
-      <li><a href="#why">Why Digital</a></li>
-      <li><a href="#products">Products</a></li>
-
-
-      <li><a href="#faq">FAQ</a></li>
-      <li><a href="#contact" class="btn btn-primary nav-cta">Free Quote</a></li>
-    </ul>
-    <div class="hamburger" id="hamburger">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-</nav>
-
-<!-- MOBILE NAV -->
-<div class="mobile-nav" id="mobile-nav">
-  <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
-  <a href="#why">Why Digital</a>
-  <a href="#products">Products</a>
-
-
-  <a href="#faq">FAQ</a>
-  <a href="#contact" class="btn btn-primary">Get Free Quote</a>
-</div>
-
-<!-- HERO -->
-<section id="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="container">
-    <div class="hero-content">
-      <div class="hero-top">
-        <div class="hero-text">
-          <div class="hero-eyebrow">
-            <span class="hero-eyebrow-line"></span>
-            <span class="hero-eyebrow-text">Ontario's Digital Sign Experts</span>
-          </div>
-          <h1 class="hero-headline">
-            Make Your<br>Business<br><em>Impossible</em><br>to Ignore
-          </h1>
-          <p class="hero-sub">Full-colour LED digital message boards and billboard displays. Professionally installed across Southern Ontario — with the best prices guaranteed.</p>
-          <div class="hero-actions">
-            <a href="#contact" class="btn btn-primary">Get a Free Quote ↗</a>
-            <a href="tel:9059063900" class="hero-phone" onclick="gtag('event','conversion',{'send_to':'AW-18102235966/DEqYCNjHyKccEL7m6LdD'});">
-              <span class="hero-phone-icon">📞</span>
-              905-906-3900
-            </a>
-          </div>
-        </div>
-        <div class="hero-image-wrap">
-          <img src="images/RHVP.jpg" alt="Large outdoor LED digital billboard installed on Redhill Valley Expressway Hamilton Ontario by Dover Digital Signs" />
-          <div class="hero-image-badge">Real Install — Hamilton, ON</div>
-          <div class="hero-image-border"></div>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div>
-          <div class="hero-stat-num">100+</div>
-          <div class="hero-stat-label">Signs Installed</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">5★</div>
-          <div class="hero-stat-label">Customer Rating</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">#1</div>
-          <div class="hero-stat-label">Price in Ontario</div>
-        </div>
-        <div>
-          <div class="hero-stat-num">✓</div>
-          <div class="hero-stat-label">Installation Included</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-track" id="ticker-track">
-    <div class="ticker-item"><span class="ticker-dot"></span> Full Colour LED Displays</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Outdoor Message Boards</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Indoor Digital Signs</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Professional Installation</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Professional Sales &amp; Installation</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Serving All of Ontario</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Best Prices Guaranteed</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Update Your Sign Instantly</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Free Quote Available</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Full Colour LED Displays</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Outdoor Message Boards</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Indoor Digital Signs</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Professional Installation</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Professional Sales &amp; Installation</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Serving All of Ontario</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Best Prices Guaranteed</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Update Your Sign Instantly</div>
-    <div class="ticker-item"><span class="ticker-dot"></span> Free Quote Available</div>
-  </div>
-</div>
-
-<!-- WHY DIGITAL -->
-<section id="why">
-  <div class="container">
-    <div class="why-header reveal">
-      <span class="section-label">Why Upgrade</span>
-      <h2>Digital Signs Outperform<br>Traditional Signage</h2>
-    </div>
-    <div class="why-grid">
-      <div class="why-card reveal">
-        <span class="why-num">01</span>
-        <span class="why-icon">💡</span>
-        <h3>Eye-Catching Brightness</h3>
-        <p>Full-colour LED displays are dramatically brighter than painted signs, catching the eye of passing customers day or night — even in direct sunlight.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1">
-        <span class="why-num">02</span>
-        <span class="why-icon">🖥️</span>
-        <h3>Update Anytime, From Anywhere</h3>
-        <p>Change your message, prices, or promotions instantly from any laptop or tablet — no ladders, no printer, no weather delays. Your sign, your schedule.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-2">
-        <span class="why-num">03</span>
-        <span class="why-icon">📈</span>
-        <h3>Proven to Boost Revenue</h3>
-        <p>Studies show digital signs can increase revenue by up to 33%. A dynamic, professional display tells customers your business is modern, credible, and worth their time.</p>
-      </div>
-      <div class="why-card reveal">
-        <span class="why-num">04</span>
-        <span class="why-icon">🔋</span>
-        <h3>Energy Efficient</h3>
-        <p>LED technology uses a fraction of the power of older neon or fluorescent signs. Lower operating costs mean your sign pays for itself even faster.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1">
-        <span class="why-num">05</span>
-        <span class="why-icon">🛡️</span>
-        <h3>Built to Last Ontario Winters</h3>
-        <p>Our signs are weatherproofed and built for Canadian climates — rain, snow, and -30°C. You get full warranty coverage and local support when you need it.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-2">
-        <span class="why-num">06</span>
-        <span class="why-icon">🏆</span>
-        <h3>Outshine Your Competition</h3>
-        <p>If your competitor has a static sign, you automatically stand out. If they already have digital, you need one too — let us make sure yours is better.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRODUCTS -->
-<section id="products">
-  <div class="container">
-    <div class="products-header">
-      <div>
-        <span class="section-label">What We Offer</span>
-        <h2 class="reveal">Signs for Every<br>Business</h2>
-      </div>
-      <p class="reveal" style="color:var(--grey); max-width:340px; font-size:16px; text-align:right;">From small storefront displays to large roadside billboards — we find the right sign for your space and budget.</p>
-    </div>
-    <div class="products-grid">
-      <div class="product-card reveal">
-        <div class="product-card-bg" style="background-image: url('images/RHVP.jpg');"></div>
-        <div class="product-card-overlay"></div>
-        <span class="product-card-arrow">→</span>
-        <div class="product-card-content">
-          <span class="product-card-tag">Most Popular</span>
-          <h3>Outdoor Message Boards</h3>
-          <p>Roadside and storefront LED message boards that grab attention from the street. Perfect for retailers, restaurants, churches, and any business with foot or drive-by traffic.</p>
-        </div>
-      </div>
-      <div class="product-card reveal reveal-delay-1">
-        <div class="product-card-bg" style="background-image: url('images/Delta.jpg');"></div>
-        <div class="product-card-overlay"></div>
-        <span class="product-card-arrow">→</span>
-        <div class="product-card-content">
-          <span class="product-card-tag">Churches</span>
-          <h3>Church Message Boards</h3>
-          <p>Welcoming, full-colour digital message boards tailored for churches and places of worship. Display service times, events, and community messages — updated instantly from any device.</p>
-        </div>
-      </div>
-      <div class="product-card reveal">
-        <div class="product-card-bg" style="background-image: url('images/HarwilMockup.jpg');"></div>
-        <div class="product-card-overlay"></div>
-        <span class="product-card-arrow">→</span>
-        <div class="product-card-content">
-          <span class="product-card-tag">Outdoor</span>
-          <h3>Pylon & Monument Signs</h3>
-          <p>Tall, freestanding LED pylon signs that ensure your business is visible from a distance on busy roads and plazas. Built and installed to code.</p>
-        </div>
-      </div>
-      <div class="product-card reveal reveal-delay-1">
-        <div class="product-card-bg" style="background-image: url('images/HagIDA1.jpg');"></div>
-        <div class="product-card-overlay"></div>
-        <span class="product-card-arrow">→</span>
-        <div class="product-card-content">
-          <span class="product-card-tag">Storefront</span>
-          <h3>Window & Wall Displays</h3>
-          <p>Compact LED panels for window installation or interior walls. Great for hair salons, real estate offices, medical clinics, gyms, and professional services.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-<!-- GALLERY -->
-<section id="gallery">
-  <div class="container">
-    <div class="gallery-header reveal">
-      <span class="section-label">Our Work</span>
-      <h2>Real Signs. Real Businesses.<br>Real Results.</h2>
-    </div>
-    <div class="gallery-grid">
-      <div class="gallery-item gallery-item--wide reveal">
-        <img src="images/RHVP.jpg" alt="Large outdoor LED digital billboard installed on Redhill Valley Expressway Hamilton Ontario by Dover Digital Signs" />
-        <div class="gallery-caption">Redhill Valley Expressway — Hamilton, ON</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-1">
-        <img src="images/HagIDA1.jpg" alt="Outdoor LED digital wall sign installed for Cavanagh IDA Pharmacy in Hagersville Ontario" loading="lazy" />
-        <div class="gallery-caption">Cavanagh IDA Pharmacy — Hagersville</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-2">
-        <img src="images/Independent.jpg" alt="LED digital pylon sign for Your Independent Grocer grocery store Southern Ontario" loading="lazy" />
-        <div class="gallery-caption">Your Independent Grocer — Ontario</div>
-      </div>
-      <div class="gallery-item reveal">
-        <img src="images/OntarioStoneSupply.jpeg" alt="Outdoor LED digital message board installed for Ontario Stone Supply and The Branch by Connon Nurseries Ontario" loading="lazy" />
-        <div class="gallery-caption">Ontario Stone Supply — Pylon Sign</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-1">
-        <img src="images/ColemanMockup.jpg" alt="LED digital pylon sign for Coleman Equipment sales rentals and service Southern Ontario" loading="lazy" />
-        <div class="gallery-caption">Coleman Equipment — Pylon Sign</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-2">
-        <img src="images/HarwilMockup.jpg" alt="LED digital message board sign for Harwil Farms Mobile Feeds retail store Ontario" loading="lazy" />
-        <div class="gallery-caption">Harwil Farms Mobile Feeds — Ontario</div>
-      </div>
-      <div class="gallery-item reveal">
-        <img src="images/Church.jpg" alt="Church digital LED message board installed at Hamilton Mountain Seventh-day Adventist Church Ontario" loading="lazy" />
-        <div class="gallery-caption">Church Sign — Hamilton Mountain</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-1">
-        <img src="images/BigBMockup.jpg" alt="Full colour LED digital pylon sign for Big B Comics retail store Hamilton Ontario" loading="lazy" />
-        <div class="gallery-caption">Big B Comics — Hamilton, ON</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-2">
-        <img src="images/Barrel.jpg" alt="LED digital message board sign for The Barrel Authentic Pizza and Pasta restaurant Ontario" loading="lazy" />
-        <div class="gallery-caption">The Barrel Pizza &amp; Pasta — Ontario</div>
-      </div>
-      <div class="gallery-item reveal">
-        <img src="images/Delta.jpg" alt="Full colour LED digital message board installed at Delta United Church by Dover Digital Signs Ontario" loading="lazy" />
-        <div class="gallery-caption">Delta United Church</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-1">
-        <img src="images/BigRedPlaza.jpg" alt="Digital LED sign installed at Richmond Plaza for Big Red Market Ontario" loading="lazy" />
-        <div class="gallery-caption">Richmond Plaza — Big Red Market</div>
-      </div>
-      <div class="gallery-item reveal reveal-delay-2">
-        <img src="images/Wholesale.jpg" alt="Outdoor LED digital sign installed for Doolittle Variety and Wholesale Ontario" loading="lazy" />
-        <div class="gallery-caption">Doolittle Variety &amp; Wholesale</div>
-      </div>
-      <div class="gallery-item reveal">
-        <img src="images/Lodge.jpg" alt="Mobile LED trailer digital sign for events and promotions Southern Ontario" loading="lazy" />
-        <div class="gallery-caption">Mobile LED Trailer Sign</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TESTIMONIALS -->
-<section id="testimonials">
-  <div class="container">
-    <div class="testimonials-header reveal">
-      <span class="section-label">What Customers Say</span>
-      <h2>Our Customers Love<br>Their New Signs</h2>
-    </div>
-    <div class="testimonials-grid">
-      <div class="testimonial-card reveal">
-        <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">The team was fantastic to work with — honest, knowledgeable, and got our sign installed faster than expected. We noticed more walk-in traffic within the first week. Best investment we've made for our restaurant.</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">ML</div>
-          <div>
-            <div class="testimonial-name">Maria L.</div>
-            <div class="testimonial-biz">Restaurant Owner, Hamilton</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card reveal reveal-delay-1">
-        <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">I shopped around and Dover beat everyone else's price by a significant margin — and the quality is outstanding. They explained everything clearly and the sign looks incredible. Highly recommend.</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">DK</div>
-          <div>
-            <div class="testimonial-name">Dave K.</div>
-            <div class="testimonial-biz">Auto Dealer, Burlington</div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-card reveal reveal-delay-2">
-        <div class="testimonial-quote-mark">"</div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">Our congregation immediately noticed the upgrade. The installation was seamless and being able to update the sign from our laptop each week has been a game-changer for communicating events.</p>
-        <div class="testimonial-author">
-          <div class="testimonial-avatar">PJ</div>
-          <div>
-            <div class="testimonial-name">Pastor James</div>
-            <div class="testimonial-biz">Community Church, Brantford</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ABOUT SECTION - commented out, can be re-enabled later
-<section id="about">
-  <div class="container">
-    <div class="about-grid">
-      <div class="about-image-wrap reveal">
-        <div class="about-image">
-          <span style="opacity:0.15;font-size:100px;">👨‍🔧</span>
-          <span style="position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--grey);padding:16px;background:rgba(10,10,12,0.8);">Simon's Photo Goes Here</span>
-        </div>
-        <div class="about-image-badge">
-          <span class="about-image-badge-num">10+</span>
-          <span class="about-image-badge-label">Years Experience</span>
-        </div>
-      </div>
-      <div class="about-content reveal reveal-delay-1">
-        <span class="section-label">About Us</span>
-        <h2>Meet Simon,<br>The Sign Guy</h2>
-        <p>Dover Digital Signs was built on a simple idea: Ontario small businesses deserve professional digital signage at prices they can actually afford — without the corporate runaround.</p>
-        <p>Simon has been selling and installing digital signs across Hamilton, Burlington, Brantford, and beyond for over a decade. He's worked with restaurants, retailers, churches, gyms, auto dealers, and everything in between.</p>
-        <p>When you call Dover, you're talking directly to Simon — not a call center. He'll visit your location, help you choose the right sign, handle the installation, and make sure you actually know how to use it.</p>
-        <ul class="about-list">
-          <li><span class="about-list-check">✦</span> Local, owner-operated business</li>
-          <li><span class="about-list-check">✦</span> Free on-site consultation</li>
-          <li><span class="about-list-check">✦</span> Full installation and training included</li>
-          <li><span class="about-list-check">✦</span> Ongoing local support</li>
-          <li><span class="about-list-check">✦</span> Best prices in Ontario — guaranteed</li>
-        </ul>
-        <a href="tel:9059063900" class="btn btn-primary" style="margin-top:8px;" onclick="gtag('event','conversion',{'send_to':'AW-18102235966/DEqYCNjHyKccEL7m6LdD'});">Call Simon Directly</a>
-      </div>
-    </div>
-  </div>
-</section>
--->
-
-<!-- SERVICE AREA -->
-<section id="service-area">
-  <div class="container">
-    <div class="service-area-inner">
-      <div class="service-area-text reveal">
-        <span class="section-label">Where We Work</span>
-        <h3>Serving Southern Ontario</h3>
-        <p>Based out of Port Dover, we install and service signs across the greater Hamilton region and all of Southern Ontario. Not sure if we cover your area? Just ask.</p>
-      </div>
-      <div class="service-cities reveal reveal-delay-1">
-        <span class="city-chip">Hamilton</span>
-        <span class="city-chip">Burlington</span>
-        <span class="city-chip">Oakville</span>
-        <span class="city-chip">Mississauga</span>
-        <span class="city-chip">Brampton</span>
-        <span class="city-chip">Milton</span>
-        <span class="city-chip">Guelph</span>
-        <span class="city-chip">Cambridge</span>
-        <span class="city-chip">Kitchener</span>
-        <span class="city-chip">Waterloo</span>
-        <span class="city-chip">Brantford</span>
-        <span class="city-chip">Paris</span>
-        <span class="city-chip">Woodstock</span>
-        <span class="city-chip">Grimsby</span>
-        <span class="city-chip">Beamsville</span>
-        <span class="city-chip">St. Catharines</span>
-        <span class="city-chip">Niagara Falls</span>
-        <span class="city-chip">Welland</span>
-        <span class="city-chip">Ancaster</span>
-        <span class="city-chip">Dundas</span>
-        <span class="city-chip">Waterdown</span>
-        <span class="city-chip">Stoney Creek</span>
-        <span class="city-chip">Caledonia</span>
-        <span class="city-chip">Hagersville</span>
-        <span class="city-chip">Cayuga</span>
-        <span class="city-chip">Dunnville</span>
-        <span class="city-chip">Port Dover</span>
-        <span class="city-chip">Simcoe</span>
-        <span class="city-chip">Delhi</span>
-        <span class="city-chip">Tillsonburg</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section id="faq">
-  <div class="container">
-    <div class="faq-header reveal">
-      <span class="section-label">Common Questions</span>
-      <h2>Frequently Asked Questions</h2>
-    </div>
-    <div class="faq-grid">
-      <div class="faq-item reveal" onclick="toggleFaq(this)">
-        <div class="faq-question">
-          How much does a digital sign cost?
-          <span class="faq-toggle">+</span>
-        </div>
-        <div class="faq-answer">Prices vary based on sign size, type, and location. We always offer a free, no-obligation quote — contact us and we'll come out to your location and give you a firm number with no surprises.</div>
-      </div>
-
-      <div class="faq-item reveal" onclick="toggleFaq(this)">
-        <div class="faq-question">
-          How do I update the sign's content?
-          <span class="faq-toggle">+</span>
-        </div>
-        <div class="faq-answer">It's very easy — you can update your sign from any laptop or tablet. We provide full training so you and your staff know exactly how to use the software. Most customers are updating their sign confidently within 15 minutes of training.</div>
-      </div>
-      <div class="faq-item reveal reveal-delay-1" onclick="toggleFaq(this)">
-        <div class="faq-question">
-          What if the sign breaks or has issues?
-          <span class="faq-toggle">+</span>
-        </div>
-        <div class="faq-answer">All our signs come with a manufacturer's warranty, and as a local company we provide ongoing support. You're not calling a distant call center — you're calling us directly. We'll get your issue resolved quickly.</div>
-      </div>
-      <div class="faq-item reveal" onclick="toggleFaq(this)">
-        <div class="faq-question">
-          Can the sign handle Ontario winter weather?
-          <span class="faq-toggle">+</span>
-        </div>
-        <div class="faq-answer">Absolutely. Our outdoor signs are weatherproofed for Canadian winters and rated to operate in extreme cold and moisture. They're designed and tested for climates like ours — not just California sun.</div>
-      </div>
-      <div class="faq-item reveal reveal-delay-1" onclick="toggleFaq(this)">
-        <div class="faq-question">
-          How long does installation take?
-          <span class="faq-toggle">+</span>
-        </div>
-        <div class="faq-answer">Most installations are completed in a single day. For larger or more complex installs (like tall pylon signs) it may take two days. We'll give you a realistic timeline when we come out for your consultation and work around your business hours to minimize disruption.</div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact">
-  <div class="container">
-    <div class="contact-grid">
-      <div class="contact-info reveal">
-        <span class="section-label">Get in Touch</span>
-        <h2>Let's Get You a Free Quote</h2>
-        <p>No pressure, no obligation. We'll review your request and get back to you quickly — usually the same day. A site visit is free and there's no commitment required.</p>
-        <div class="contact-methods">
-          <div class="contact-method">
-            <div class="contact-method-icon">📞</div>
-            <div>
-              <div class="contact-method-label">Call or Text Us</div>
-              <a href="tel:9059063900" class="contact-method-value" onclick="gtag('event','conversion',{'send_to':'AW-18102235966/DEqYCNjHyKccEL7m6LdD'});">905-906-3900</a>
-            </div>
-          </div>
-          <div class="contact-method">
-            <div class="contact-method-icon">✉️</div>
-            <div>
-              <div class="contact-method-label">Email</div>
-              <a href="mailto:simon@doverdigitalsigns.com" class="contact-method-value">simon@doverdigitalsigns.com</a>
-            </div>
-          </div>
-          <div class="contact-method">
-            <div class="contact-method-icon">📍</div>
-            <div>
-              <div class="contact-method-label">Based In</div>
-              <span class="contact-method-value">Port Dover, Ontario</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="reveal reveal-delay-1">
-        <div class="contact-form-wrap">
-          <div id="form-content">
-            <div class="form-title">Request a Free Quote</div>
-            <div class="form-subtitle">Fill this out and we'll be in touch within one business day.</div>
-            <form id="quote-form" name="quote" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="handleSubmit(event)">
-              <input type="hidden" name="form-name" value="quote" />
-              <input type="hidden" name="bot-field" style="display:none" />
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="name">Your Name</label>
-                  <input type="text" id="name" name="name" placeholder="John Smith" required />
-                </div>
-                <div class="form-group">
-                  <label for="business">Business Name</label>
-                  <input type="text" id="business" name="business" placeholder="Smith's Restaurant" required />
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="phone">Phone Number</label>
-                  <input type="tel" id="phone" name="phone" placeholder="905-555-0100" required />
-                </div>
-                <div class="form-group">
-                  <label for="email">Email Address</label>
-                  <input type="email" id="email" name="email" placeholder="john@mybusiness.com" required />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="location">Sign Installation Location</label>
-                <input type="text" id="location" name="location" placeholder="e.g. 123 King St W, Hamilton — or just the city/area" />
-              </div>
-
-              <div class="form-group">
-                <label for="message">Anything else we should know?</label>
-                <textarea id="message" name="message" placeholder="Tell us about your business type, sign size, or any specific questions…"></textarea>
-              </div>
-              <button type="submit" class="btn btn-primary form-submit">Send My Quote Request →</button>
-              <div class="form-note">🔒 Your info stays private. No spam, ever.</div>
-            </form>
-          </div>
-          <div class="form-success" id="form-success">
-            <div class="form-success-icon">✅</div>
-            <h3>Request Sent!</h3>
-            <p>Thanks! We'll be in touch with you shortly — usually the same business day. In the meantime, feel free to call or text at <a href="tel:9059063900" style="color:var(--amber);" onclick="gtag('event','conversion',{'send_to':'AW-18102235966/DEqYCNjHyKccEL7m6LdD'});">905-906-3900</a>.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="container">
-    <div class="footer-top">
-      <div>
-        <div class="footer-logo">
-          <span class="footer-logo-main">Dover Digital Signs</span>
-          <span class="footer-logo-sub">Ontario's Digital Sign Experts</span>
-        </div>
-        <p class="footer-tagline">Ontario's most affordable full-colour LED message boards and digital signs. Professionally installed. Locally supported.</p>
-      </div>
-      <div class="footer-nav-col">
-        <h4>Navigate</h4>
-        <ul>
-          <li><a href="#why">Why Digital Signs</a></li>
-          <li><a href="#products">Our Products</a></li>
-
-
-          <li><a href="#faq">FAQ</a></li>
-        </ul>
-      </div>
-      <div class="footer-nav-col">
-        <h4>Contact</h4>
-        <ul>
-          <li><a href="tel:9059063900" onclick="gtag('event','conversion',{'send_to':'AW-18102235966/DEqYCNjHyKccEL7m6LdD'});">905-906-3900</a></li>
-          <li><a href="mailto:simon@doverdigitalsigns.com">simon@doverdigitalsigns.com</a></li>
-          <li><a href="#contact">Get a Free Quote</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span class="footer-copy">© 2026 Dover Digital Signs. All rights reserved.</span>
-      <div class="footer-bottom-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms</a>
-      </div>
-    </div>
-  </div>
-</footer>
-
-<!-- FLOATING CTA -->
-<div class="floating-cta" id="floating-cta">
-  <a href="#contact" class="btn btn-primary">📋 Free Quote</a>
-</div>
+<div id="root"></div>
 
 <script>
-  // Nav scroll
-  const nav = document.getElementById('main-nav');
-  const floatingCta = document.getElementById('floating-cta');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 50);
-    floatingCta.classList.toggle('visible', window.scrollY > 600);
+/* =========================================================
+   CONFIG — Supabase project
+   ========================================================= */
+const SUPABASE_URL = "https://nlahmlqtzgscxllzopua.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sYWhtbHF0emdzY3hsbHpvcHVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NzM2ODgsImV4cCI6MjA5OTQ0OTY4OH0.pmT48FdVOkKhBUto7Il1j4LeQ_j_o_XkLWyFl6qlltg";
+const PHOTO_BUCKET = "reader-board-photos";
+/* ========================================================= */
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const configured = !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
+
+const state = {
+  customers: [],
+  notes: [],
+  contacts: [],
+  folders: [],
+  view: 'customers',
+  selectedId: null,
+  search: '',
+  sourceFilter: 'ALL',
+  folderFilter: 'ALL',
+  currentUser: localStorage.getItem('dds_user') || '',
+  loading: true,
+  error: null,
+  toast: null,
+  lightboxSrc: null,
+  addingCustomer: false,
+  editingCustomer: false,
+};
+
+const DEFAULT_SOURCE = 'Dover Digital Signs (Main)';
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function telHref(phone){ return (phone||'').replace(/[^\d+]/g, ''); }
+function fmtDate(d){ if(!d) return ''; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function daysUntil(d){ const a = new Date(todayStr()+'T00:00:00'); const b = new Date(d+'T00:00:00'); return Math.round((b-a)/86400000); }
+function showToast(msg){ state.toast = msg; render(); setTimeout(()=>{ state.toast=null; render(); }, 2200); }
+function saveUser(name){ state.currentUser = name; localStorage.setItem('dds_user', name); }
+
+async function loadAll(){
+  if(!configured){ state.loading=false; render(); return; }
+  state.loading = true; state.error = null; render();
+  const [{data:custs, error:cErr}, {data:notes, error:nErr}, {data:contacts, error:ctErr}, {data:folders, error:fErr}] = await Promise.all([
+    sb.from('customers').select('*'),
+    sb.from('notes').select('*'),
+    sb.from('contacts').select('*'),
+    sb.from('folders').select('*'),
+  ]);
+  if(cErr || nErr || ctErr || fErr){
+    state.error = (cErr && cErr.message) || (nErr && nErr.message) || (ctErr && ctErr.message) || (fErr && fErr.message);
+  } else {
+    state.customers = custs || [];
+    state.notes = notes || [];
+    state.contacts = contacts || [];
+    state.folders = folders || [];
+  }
+  state.loading = false;
+  render();
+}
+
+// ---------- derived helpers ----------
+function allSources(){
+  const s = new Set([DEFAULT_SOURCE]);
+  state.customers.forEach(c => s.add(c.source || DEFAULT_SOURCE));
+  return Array.from(s);
+}
+function allFolders(){
+  const names = new Set(state.folders.map(f=>f.name));
+  state.customers.forEach(c => { if(c.folder) names.add(c.folder); });
+  return Array.from(names).sort();
+}
+async function ensureFolderExists(name){
+  if(!name) return;
+  if(state.folders.some(f=>f.name===name)) return;
+  const { data, error } = await sb.from('folders').insert([{ name }]).select();
+  if(error){
+    if(!/duplicate|unique/i.test(error.message)) showToast('Could not create folder: ' + error.message);
+    return;
+  }
+  if(data && data[0]) state.folders.push(data[0]);
+}
+function contactsFor(custId){
+  return state.contacts.filter(ct => ct.customer_id === custId);
+}
+function filteredCustomers(){
+  let list = state.customers;
+  if(state.sourceFilter !== 'ALL'){
+    list = list.filter(c => (c.source || DEFAULT_SOURCE) === state.sourceFilter);
+  }
+  if(state.folderFilter !== 'ALL'){
+    list = list.filter(c => (c.folder || '') === state.folderFilter);
+  }
+  const q = state.search.trim().toLowerCase();
+  if(q){
+    const matchingNoteCustIds = new Set(
+      state.notes.filter(n => (n.note_text||'').toLowerCase().includes(q)).map(n => n.customer_id)
+    );
+    const matchingContactCustIds = new Set(
+      state.contacts.filter(ct => (ct.name||'').toLowerCase().includes(q) || (ct.phone||'').toLowerCase().includes(q))
+        .map(ct => ct.customer_id)
+    );
+    list = list.filter(c =>
+      (c.company||'').toLowerCase().includes(q) ||
+      (c.street||'').toLowerCase().includes(q) ||
+      (c.city||'').toLowerCase().includes(q) ||
+      (c.postal_code||'').toLowerCase().includes(q) ||
+      matchingNoteCustIds.has(c.id) ||
+      matchingContactCustIds.has(c.id)
+    );
+  }
+  return list.slice().sort((a,b)=> (a.company||'').localeCompare(b.company||''));
+}
+function notesFor(custId){
+  return state.notes.filter(n => n.customer_id === custId).sort((a,b)=> (b.date_of_note||'').localeCompare(a.date_of_note||''));
+}
+function allFollowUps(){
+  return state.notes
+    .filter(n => n.follow_up_date)
+    .map(n => ({ note:n, cust: state.customers.find(c=>c.id===n.customer_id) }))
+    .filter(x => x.cust)
+    .sort((a,b)=> a.note.follow_up_date.localeCompare(b.note.follow_up_date));
+}
+
+// ---------- image compression + upload ----------
+function compressToBlob(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.7);
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
+}
+async function uploadPhoto(custId, blob){
+  const path = `${custId}/${uid()}.jpg`;
+  const { error } = await sb.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg' });
+  if(error) throw error;
+  const { data } = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
 
-  // Reveal on scroll
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in-view'); });
-  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
-  reveals.forEach(el => observer.observe(el));
+// ---------- actions ----------
+async function addCustomer(data){
+  const { data: rows, error } = await sb.from('customers').insert([data]).select();
+  if(error){ showToast('Save failed: ' + error.message); return; }
+  state.customers.push(rows[0]);
+  state.addingCustomer = false;
+  state.selectedId = rows[0].id;
+  render();
+  showToast('Customer added');
+}
+async function updateCustomer(id, data){
+  const { error } = await sb.from('customers').update(data).eq('id', id);
+  if(error){ showToast('Save failed: ' + error.message); return; }
+  const c = state.customers.find(c=>c.id===id);
+  Object.assign(c, data);
+  state.editingCustomer = false;
+  render();
+  showToast('Saved');
+}
+async function deleteCustomer(id){
+  const { error } = await sb.from('customers').delete().eq('id', id);
+  if(error){ showToast('Delete failed: ' + error.message); return; }
+  state.customers = state.customers.filter(c=>c.id!==id);
+  state.notes = state.notes.filter(n=>n.customer_id!==id);
+  state.contacts = state.contacts.filter(ct=>ct.customer_id!==id);
+  state.selectedId = null;
+  render();
+  showToast('Customer deleted');
+}
+async function addNote(custId, data){
+  const payload = { customer_id: custId, created_by: state.currentUser || 'Unknown', ...data };
+  const { data: rows, error } = await sb.from('notes').insert([payload]).select();
+  if(error){ showToast('Save failed: ' + error.message); return; }
+  state.notes.push(rows[0]);
+  render();
+  showToast('Note added');
+}
+async function deleteNote(id){
+  const { error } = await sb.from('notes').delete().eq('id', id);
+  if(error){ showToast('Delete failed: ' + error.message); return; }
+  state.notes = state.notes.filter(n=>n.id!==id);
+  render();
+}
+async function addContact(custId, data){
+  const { data: rows, error } = await sb.from('contacts').insert([{ customer_id: custId, ...data }]).select();
+  if(error){ showToast('Save failed: ' + error.message); return; }
+  state.contacts.push(rows[0]);
+  render();
+  showToast('Contact added');
+}
+async function deleteContact(id){
+  const { error } = await sb.from('contacts').delete().eq('id', id);
+  if(error){ showToast('Delete failed: ' + error.message); return; }
+  state.contacts = state.contacts.filter(ct=>ct.id!==id);
+  render();
+}
 
-  // FAQ toggle
-  function toggleFaq(el) {
-    const isOpen = el.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) el.classList.add('open');
+// ---------- render ----------
+function render(){
+  const root = document.getElementById('root');
+  if(!configured){
+    root.innerHTML = headerHtml() + `<main><div class="errbox">
+      This app isn't connected to a database yet. Open <code>index.html</code> and fill in
+      <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the file.
+    </div></main>`;
+    bindHeaderEvents();
+    return;
+  }
+  if(state.loading){
+    root.innerHTML = headerHtml() + '<div class="loading">Loading customer data…</div>';
+    bindHeaderEvents();
+    return;
+  }
+  let body = '';
+  if(state.error){
+    body = `<main><div class="errbox">Couldn't load data: ${esc(state.error)}</div></main>`;
+  } else if(state.view === 'customers'){
+    body = customersViewHtml();
+  } else if(state.view === 'folders'){
+    body = foldersViewHtml();
+  } else {
+    body = followupsViewHtml();
   }
 
-  // Mobile nav
-  const mobileNav = document.getElementById('mobile-nav');
-  document.getElementById('hamburger').addEventListener('click', function() {
-    mobileNav.classList.add('open');
-  });
-  document.getElementById('mobile-nav-close').addEventListener('click', function() {
-    mobileNav.classList.remove('open');
-  });
-  document.querySelectorAll('.mobile-nav a').forEach(function(link) {
-    link.addEventListener('click', function() {
-      mobileNav.classList.remove('open');
-    });
-  });
+  root.innerHTML = headerHtml() + navHtml() + body +
+    (state.toast ? `<div class="toast">${esc(state.toast)}</div>` : '') +
+    (state.lightboxSrc ? `<div class="lightbox" id="lightbox"><img src="${state.lightboxSrc}"></div>` : '') +
+    modalsHtml();
 
-  // Form submit — Netlify Forms
-  function handleSubmit(e) {
-    e.preventDefault();
-    const form = document.getElementById('quote-form');
-    const btn = form.querySelector('button[type="submit"]');
-    btn.textContent = 'Sending…';
-    btn.disabled = true;
+  bindEvents();
+}
 
-    const locationVal = form.elements['location'].value.trim();
-    const messageVal  = form.elements['message'].value.trim();
-    const combinedMsg = (locationVal ? 'Sign location: ' + locationVal + '\n\n' : '')
-                      + (messageVal  ? messageVal : '');
+function headerHtml(){
+  return `
+  <header>
+    <div class="brand">
+      <div class="mark">${Array.from({length:12}).map(()=>'<span></span>').join('')}</div>
+      <div>
+        <h1>Dover Digital Signs</h1>
+        <div class="sub">Customer Tracker</div>
+      </div>
+    </div>
+    <div class="who">
+      <span>Signed in as</span>
+      <input id="userNameInput" type="text" placeholder="your name" value="${esc(state.currentUser)}">
+    </div>
+  </header>`;
+}
 
-    const params = new URLSearchParams();
-    params.append('form-name', 'quote');
-    params.append('name',     form.elements['name'].value);
-    params.append('business', form.elements['business'].value);
-    params.append('phone',    form.elements['phone'].value);
-    params.append('email',    form.elements['email'].value);
-    params.append('location', locationVal);
-    params.append('message',  combinedMsg);
+function navHtml(){
+  return `
+  <nav>
+    <button data-view="customers" class="${state.view==='customers'?'active':''}">Customers</button>
+    <button data-view="folders" class="${state.view==='folders'?'active':''}">Folders</button>
+    <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups${
+      (()=>{ const n = allFollowUps().filter(x=>daysUntil(x.note.follow_up_date)<=0).length; return n>0 ? ` (${n})` : ''; })()
+    }</button>
+  </nav>`;
+}
 
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    })
-    .then(() => {
-      gtag('event', 'conversion', {
-        'send_to': 'AW-18102235966/sXNCCPCExZ4cEL7m6LdD',
-        'value': 1.0,
-        'currency': 'CAD'
-      });
-      document.getElementById('form-content').style.display = 'none';
-      document.getElementById('form-success').style.display = 'block';
-    })
-    .catch(() => {
-      btn.textContent = 'Send My Quote Request →';
-      btn.disabled = false;
-      alert('Something went wrong — please try calling us at 905-906-3900.');
-    });
+function foldersViewHtml(){
+  const folders = allFolders();
+  const noFolderCount = state.customers.filter(c=>!c.folder).length;
+  return `
+  <main>
+    <div class="toolbar">
+      <div style="font-size:13.5px; color:var(--muted); flex:1;">Tap a folder to see the customers inside it.</div>
+      <button class="btn amber" id="newFolderBtn">+ New Folder</button>
+    </div>
+    <div class="card list" style="max-height:none;">
+      ${folders.length===0 && noFolderCount===0 ? `<div class="empty">No folders yet. Add one from a customer's page.</div>` : `
+        ${folders.map(f => `
+          <div class="cust-item" data-folder="${esc(f)}">
+            <div class="name">${esc(f)}</div>
+            <div class="addr">${state.customers.filter(c=>c.folder===f).length} customer(s)</div>
+          </div>`).join('')}
+        ${noFolderCount>0 ? `
+          <div class="cust-item" data-folder="">
+            <div class="name">No Folder</div>
+            <div class="addr">${noFolderCount} customer(s)</div>
+          </div>` : ''}
+      `}
+    </div>
+  </main>`;
+}
+
+function customersViewHtml(){
+  const list = filteredCustomers();
+  const sel = state.customers.find(c=>c.id===state.selectedId);
+  const folders = allFolders();
+  return `
+  <main>
+    <div class="toolbar">
+      <input id="searchInput" type="text" placeholder="Search company, address, contact, or note text…" value="${esc(state.search)}">
+      <select id="sourceFilterSel">
+        <option value="ALL" ${state.sourceFilter==='ALL'?'selected':''}>All sources</option>
+        ${allSources().map(s=>`<option value="${esc(s)}" ${state.sourceFilter===s?'selected':''}>${esc(s)}</option>`).join('')}
+      </select>
+      <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
+    </div>
+    ${state.folderFilter!=='ALL' ? `<div class="folder-chips"><span class="folder-chip active" data-folder="ALL">Folder: ${esc(state.folderFilter||'No Folder')} — tap to clear</span></div>` : ''}
+    <div class="layout">
+      <div class="card list">
+        ${list.length===0 ? `<div class="empty">No customers yet.<br>Add your first one to get started.</div>` :
+          list.map(c => `
+            <div class="cust-item ${c.id===state.selectedId?'sel':''}" data-id="${c.id}">
+              <div class="name">${esc(c.company||'(no company name)')}</div>
+              <div class="addr">${esc([c.street,c.city,c.province].filter(Boolean).join(', '))}</div>
+              <div>
+                <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
+                ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
+              </div>
+            </div>`).join('')}
+      </div>
+      <div class="card">
+        ${sel ? customerDetailHtml(sel) : `<div class="empty">Select a customer on the left, or add a new one.</div>`}
+      </div>
+    </div>
+  </main>`;
+}
+
+function customerDetailHtml(c){
+  const notes = notesFor(c.id);
+  const contacts = contactsFor(c.id);
+  return `
+  <div class="detail">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <h2>${esc(c.company||'(no company name)')}</h2>
+        <div class="addr-line">${esc([c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', ')) || 'No address on file'}</div>
+      </div>
+      <div class="row-actions">
+        <button class="btn ghost small" data-share-cust="${c.id}">Share</button>
+        <button class="btn ghost small" data-edit-cust="${c.id}">Edit</button>
+        <button class="btn danger small" data-del-cust="${c.id}">Delete</button>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:8px;">
+      <div>
+        <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
+        ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
+      </div>
+      <div><strong>Existing sign size:</strong> ${esc(c.size_of_existing_sign)||'—'}</div>
+    </div>
+    <div class="row-actions" style="align-items:center; margin-bottom:14px;">
+      <label style="font-size:12px; color:var(--muted); font-weight:600;">Folder:</label>
+      <select id="folderAssignSel" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
+        <option value="">— none —</option>
+        ${allFolders().map(f=>`<option value="${esc(f)}" ${c.folder===f?'selected':''}>${esc(f)}</option>`).join('')}
+        <option value="__new__">+ New folder…</option>
+      </select>
+      <button class="btn small" id="assignFolderBtn" data-cust="${c.id}">Add to Folder</button>
+    </div>
+
+    <div class="section-title">Contacts</div>
+    ${contacts.length===0 ? `<div class="empty" style="padding:14px;">No contacts added yet.</div>` :
+      contacts.map(ct => `
+        <div class="contact-card">
+          <div>
+            <div class="cname">${esc(ct.name)||'(no name)'}</div>
+            <div class="clinks">
+              ${ct.phone ? `<a href="tel:${telHref(ct.phone)}">Call ${esc(ct.phone)}</a>` : ''}
+              ${ct.phone ? `<a href="sms:${telHref(ct.phone)}">Text</a>` : ''}
+              ${ct.email ? `<a href="mailto:${esc(ct.email)}">Email</a>` : ''}
+            </div>
+          </div>
+          <button class="btn ghost small" data-del-contact="${ct.id}" style="padding:2px 8px;">✕</button>
+        </div>`).join('')}
+    <div class="add-contact">
+      <div class="field" style="flex:1; min-width:120px;"><label>Name</label><input id="c_name" placeholder="Name"></div>
+      <div class="field" style="flex:1; min-width:120px;"><label>Phone</label><input id="c_phone" placeholder="Phone" class="mono"></div>
+      <div class="field" style="flex:1; min-width:140px;"><label>Email</label><input id="c_email" placeholder="Email"></div>
+      <button class="btn small" id="addContactBtn" data-cust="${c.id}">+ Add Contact</button>
+    </div>
+
+    <div class="section-title">Add a note</div>
+    <div class="newnote">
+      <textarea id="noteText" placeholder="What did you discuss? Reader board condition, pricing, next steps…"></textarea>
+      <div class="row">
+        <label class="mono" style="font-size:11.5px;">Date of note
+          <input type="date" id="noteDate" value="${todayStr()}">
+        </label>
+        <label class="mono" style="font-size:11.5px;">Follow up on
+          <input type="date" id="noteFollowUp">
+        </label>
+        <label style="font-size:12px;">Reader board photo(s)
+          <input type="file" id="notePhotos" accept="image/*" multiple>
+        </label>
+        <button class="btn" id="saveNoteBtn" data-cust="${c.id}">Save Note</button>
+      </div>
+    </div>
+
+    <div class="section-title">History (${notes.length})</div>
+    ${notes.length===0 ? `<div class="empty">No notes yet for this customer.</div>` :
+      notes.map(n => noteHtml(n, c.company)).join('')}
+  </div>`;
+}
+
+function followUpBadge(followUpDate){
+  if(!followUpDate) return '';
+  const d = daysUntil(followUpDate);
+  let cls = 'upcoming', label = `Follow up ${fmtDate(followUpDate)}`;
+  if(d < 0){ cls='overdue'; label = `Overdue — was due ${fmtDate(followUpDate)}`; }
+  else if(d === 0){ cls='overdue'; label = `Due today`; }
+  else if(d <= 3){ cls='upcoming'; label = `Due in ${d}d — ${fmtDate(followUpDate)}`; }
+  else { cls='done'; label = `Follow up ${fmtDate(followUpDate)}`; }
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function noteHtml(n, companyName){
+  return `
+  <div class="note">
+    <div class="meta">
+      <span>${fmtDate(n.date_of_note)} · <strong>${esc(n.created_by||'Unknown')}</strong></span>
+      <span style="display:flex; gap:8px; align-items:center;">
+        ${followUpBadge(n.follow_up_date)}
+        <button class="btn ghost small" data-del-note="${n.id}" style="padding:2px 8px;">✕</button>
+      </span>
+    </div>
+    <div class="text">${esc(n.note_text)}</div>
+    ${n.photos && n.photos.length ? `<div class="photos">${n.photos.map(p=>`<img src="${p}" data-lightbox="${p}">`).join('')}</div>` : ''}
+  </div>`;
+}
+
+function followupsViewHtml(){
+  const items = allFollowUps();
+  return `
+  <main>
+    <div class="toolbar">
+      <div style="font-size:13.5px; color:var(--muted);">Every note with a follow-up date, soonest first.</div>
+    </div>
+    <div class="card">
+      ${items.length===0 ? `<div class="empty">No follow-ups scheduled.</div>` :
+        items.map(({note,cust}) => `
+        <div class="followup-row">
+          <div>
+            <div class="co">${esc(cust.company||'(no company name)')}</div>
+            <div class="snippet">${esc(note.note_text.slice(0,140))}${note.note_text.length>140?'…':''}</div>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+            ${followUpBadge(note.follow_up_date)}
+            <button class="btn ghost small" data-goto-cust="${cust.id}">Open</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  </main>`;
+}
+
+function modalsHtml(){
+  if(state.addingCustomer) return customerFormModal(null);
+  if(state.editingCustomer) return customerFormModal(state.customers.find(c=>c.id===state.selectedId));
+  return '';
+}
+
+function customerFormModal(existing){
+  const c = existing || {};
+  return `
+  <div class="modal-bg" id="custModalBg">
+    <div class="modal">
+      <h3>${existing ? 'Edit Customer' : 'New Customer'}</h3>
+      <div class="grid2">
+        <div class="field"><label>Company</label><input id="f_company" value="${esc(c.company)}"></div>
+        <div class="field"><label>Folder / Group</label>
+          <input id="f_folder" list="folderOptions" value="${esc(c.folder)}" placeholder="e.g. Churches, Retail">
+          <datalist id="folderOptions">${allFolders().map(f=>`<option value="${esc(f)}">`).join('')}</datalist>
+        </div>
+        <div class="field"><label>Street</label><input id="f_street" value="${esc(c.street)}"></div>
+        <div class="field"><label>City</label><input id="f_city" value="${esc(c.city)}"></div>
+        <div class="field"><label>Province</label><input id="f_province" value="${esc(c.province)}"></div>
+        <div class="field"><label>Postal Code</label><input id="f_postal" class="mono" value="${esc(c.postal_code)}"></div>
+        <div class="field"><label>Size of Existing Sign</label><input id="f_size" value="${esc(c.size_of_existing_sign)}"></div>
+        <div class="field"><label>Source (office / franchisee)</label>
+          <input id="f_source" list="sourceOptions" value="${esc(c.source||DEFAULT_SOURCE)}">
+          <datalist id="sourceOptions">${allSources().map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
+        </div>
+      </div>
+      <div class="row-actions" style="justify-content:flex-end; margin-top:14px;">
+        <button class="btn ghost" id="cancelCustModal">Cancel</button>
+        <button class="btn amber" id="saveCustModal" data-existing="${existing ? existing.id : ''}">Save</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------- events ----------
+function bindHeaderEvents(){
+  const input = document.getElementById('userNameInput');
+  if(input){
+    input.addEventListener('change', e => saveUser(e.target.value.trim()));
   }
+}
+
+function bindEvents(){
+  bindHeaderEvents();
+
+  document.querySelectorAll('nav button').forEach(b=>{
+    b.onclick = () => { state.view = b.dataset.view; render(); };
+  });
+
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput){
+    searchInput.oninput = e => {
+      const pos = e.target.selectionStart;
+      state.search = e.target.value;
+      render();
+      const freshInput = document.getElementById('searchInput');
+      if(freshInput){ freshInput.focus(); freshInput.setSelectionRange(pos, pos); }
+    };
+  }
+  const sourceSel = document.getElementById('sourceFilterSel');
+  if(sourceSel){ sourceSel.onchange = e => { state.sourceFilter = e.target.value; render(); }; }
+  document.querySelectorAll('.folder-chip').forEach(el=>{
+    el.onclick = () => { state.folderFilter = el.dataset.folder; render(); };
+  });
+  const newFolderBtn = document.getElementById('newFolderBtn');
+  if(newFolderBtn){
+    newFolderBtn.onclick = async () => {
+      const name = (prompt('Folder name:') || '').trim();
+      if(!name) return;
+      await ensureFolderExists(name);
+      render();
+      showToast('Folder created');
+    };
+  }
+
+  const assignFolderBtn = document.getElementById('assignFolderBtn');
+  if(assignFolderBtn){
+    assignFolderBtn.onclick = async () => {
+      const sel = document.getElementById('folderAssignSel');
+      let val = sel.value;
+      if(val === '__new__'){
+        val = (prompt('New folder name:') || '').trim();
+        if(!val) return;
+      }
+      if(val) await ensureFolderExists(val);
+      await updateCustomer(assignFolderBtn.dataset.cust, { folder: val || null });
+    };
+  }
+
+  const newBtn = document.getElementById('newCustomerBtn');
+  if(newBtn){ newBtn.onclick = () => { state.addingCustomer = true; render(); }; }
+
+  document.querySelectorAll('.cust-item[data-id]').forEach(el=>{
+    el.onclick = () => { state.selectedId = el.dataset.id; render(); };
+  });
+  document.querySelectorAll('.cust-item[data-folder]').forEach(el=>{
+    el.onclick = () => { state.folderFilter = el.dataset.folder; state.view = 'customers'; state.selectedId = null; render(); };
+  });
+
+  document.querySelectorAll('[data-share-cust]').forEach(el=>{
+    el.onclick = async (e) => {
+      e.stopPropagation();
+      const c = state.customers.find(c=>c.id===el.dataset.shareCust);
+      if(!c) return;
+      const notes = notesFor(c.id);
+      const latest = notes[0];
+      const lines = [
+        c.company || '(no company name)',
+        [c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', '),
+      ];
+      if(latest){
+        lines.push('');
+        lines.push(`Latest note (${fmtDate(latest.date_of_note)}): ${latest.note_text}`);
+        if(latest.follow_up_date) lines.push(`Follow up: ${fmtDate(latest.follow_up_date)}`);
+      }
+      const shareText = lines.join('\n');
+      if(navigator.share){
+        try{ await navigator.share({ title: c.company || 'Customer', text: shareText }); }
+        catch(err){ /* user cancelled the share sheet, do nothing */ }
+      } else {
+        try{ await navigator.clipboard.writeText(shareText); showToast('Copied — paste it into a text, email, etc.'); }
+        catch(err){ showToast('Could not share automatically'); }
+      }
+    };
+  });
+  document.querySelectorAll('[data-edit-cust]').forEach(el=>{
+    el.onclick = (e) => { e.stopPropagation(); state.editingCustomer = true; render(); };
+  });
+  document.querySelectorAll('[data-del-cust]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      if(confirm('Delete this customer, their contacts, and all their notes? This cannot be undone.')){
+        deleteCustomer(el.dataset.delCust);
+      }
+    };
+  });
+  document.querySelectorAll('[data-goto-cust]').forEach(el=>{
+    el.onclick = () => { state.view='customers'; state.selectedId = el.dataset.gotoCust; render(); };
+  });
+  document.querySelectorAll('[data-del-note]').forEach(el=>{
+    el.onclick = () => { if(confirm('Delete this note?')) deleteNote(el.dataset.delNote); };
+  });
+  document.querySelectorAll('[data-del-contact]').forEach(el=>{
+    el.onclick = () => { if(confirm('Remove this contact?')) deleteContact(el.dataset.delContact); };
+  });
+  document.querySelectorAll('[data-copy-note]').forEach(el=>{
+    el.onclick = async () => {
+      try{ await navigator.clipboard.writeText(el.dataset.copyNote); showToast('Copied — paste into a text or email'); }
+      catch(e){ showToast('Could not copy automatically'); }
+    };
+  });
+  document.querySelectorAll('[data-lightbox]').forEach(el=>{
+    el.onclick = () => { state.lightboxSrc = el.dataset.lightbox; render(); };
+  });
+  const lb = document.getElementById('lightbox');
+  if(lb){ lb.onclick = () => { state.lightboxSrc = null; render(); }; }
+
+  const addContactBtn = document.getElementById('addContactBtn');
+  if(addContactBtn){
+    addContactBtn.onclick = async () => {
+      const name = document.getElementById('c_name').value.trim();
+      const phone = document.getElementById('c_phone').value.trim();
+      const email = document.getElementById('c_email').value.trim();
+      if(!name && !phone && !email){ showToast('Add at least a name, phone, or email'); return; }
+      await addContact(addContactBtn.dataset.cust, { name, phone, email });
+    };
+  }
+
+  const saveNoteBtn = document.getElementById('saveNoteBtn');
+  if(saveNoteBtn){
+    saveNoteBtn.onclick = async () => {
+      const custId = saveNoteBtn.dataset.cust;
+      const note_text = document.getElementById('noteText').value.trim();
+      const date_of_note = document.getElementById('noteDate').value || todayStr();
+      const follow_up_date = document.getElementById('noteFollowUp').value || null;
+      const files = document.getElementById('notePhotos').files;
+      if(!note_text){ showToast('Write a note first'); return; }
+      if(!state.currentUser){ showToast('Enter your name up top so we know who wrote this'); return; }
+      saveNoteBtn.disabled = true; saveNoteBtn.textContent = 'Saving…';
+      let photos = [];
+      try{
+        for(const f of files){
+          const blob = await compressToBlob(f);
+          const url = await uploadPhoto(custId, blob);
+          photos.push(url);
+        }
+      }catch(e){ showToast('Some photo(s) failed to upload, saving note anyway'); }
+      await addNote(custId, { note_text, date_of_note, follow_up_date, photos });
+    };
+  }
+
+  const cancelBtn = document.getElementById('cancelCustModal');
+  if(cancelBtn){ cancelBtn.onclick = () => { state.addingCustomer=false; state.editingCustomer=false; render(); }; }
+  const saveCustBtn = document.getElementById('saveCustModal');
+  if(saveCustBtn){
+    saveCustBtn.onclick = async () => {
+      const data = {
+        company: document.getElementById('f_company').value.trim(),
+        folder: document.getElementById('f_folder').value.trim() || null,
+        street: document.getElementById('f_street').value.trim(),
+        city: document.getElementById('f_city').value.trim(),
+        province: document.getElementById('f_province').value.trim(),
+        postal_code: document.getElementById('f_postal').value.trim(),
+        size_of_existing_sign: document.getElementById('f_size').value.trim(),
+        source: document.getElementById('f_source').value.trim() || DEFAULT_SOURCE,
+      };
+      if(!data.company){ showToast('Company name is required'); return; }
+      if(data.folder) await ensureFolderExists(data.folder);
+      const existingId = saveCustBtn.dataset.existing;
+      if(existingId){ await updateCustomer(existingId, data); }
+      else{ await addCustomer(data); }
+    };
+  }
+}
+
+loadAll();
 </script>
 </body>
 </html>
