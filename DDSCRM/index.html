@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///Users/chrisive/Downloads/index_8.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dover Digital Signs — Customer Tracker</title>
-<script src="./index_files/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --ink:#1c2430;
@@ -86,7 +86,6 @@
   .btn.small{ padding:5px 10px; font-size:12.5px; }
   .btn.danger{ background:transparent; color:var(--overdue); border:1px solid rgba(217,84,42,.4);}
   .btn:disabled{ opacity:.6; cursor:default; }
-  a.btn{ display:inline-block; text-decoration:none; }
 
   main{ padding:18px 22px 60px; max-width:1180px; margin:0 auto; }
 
@@ -104,14 +103,8 @@
   .cust-item .addr{ font-size:12px; color:var(--muted); margin-top:2px;}
   .tag{
     display:inline-block; font-size:10.5px; padding:2px 6px; border-radius:20px;
-    background:#eef1f5; color:var(--muted); margin-top:5px; margin-right:4px; font-weight:600;
+    background:#eef1f5; color:var(--muted); margin-top:5px; font-weight:600;
   }
-  .folder-chip{
-    display:inline-block; padding:6px 13px; border-radius:20px; background:#eef1f5; color:var(--navy);
-    font-size:12.5px; font-weight:600; cursor:pointer; border:1px solid var(--line);
-  }
-  .folder-chip.active{ background:var(--amber); color:#3a2a06; border-color:var(--amber); box-shadow:var(--amber-glow); }
-  .folder-chips{ display:flex; gap:8px; flex-wrap:wrap; padding:12px 22px 0; }
   .empty{ padding:30px 16px; color:var(--muted); font-size:13.5px; text-align:center; }
   .errbox{ padding:14px 16px; background:#fdece5; color:#8a2f10; border-radius:8px; font-size:13px; margin-bottom:14px; }
 
@@ -132,21 +125,10 @@
     font-weight:700; margin:22px 0 8px; display:flex; align-items:center; justify-content:space-between;
   }
 
-  .contact-card{
-    display:flex; justify-content:space-between; align-items:center; gap:10px;
-    border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:8px; background:#fff;
-  }
-  .contact-card .cname{ font-weight:700; font-size:13.5px; }
-  .contact-card .clinks{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:3px; }
-  .contact-card .clinks a, .contact-card .clinks span{ font-size:12px; color:var(--navy); text-decoration:none; }
-  .contact-card .clinks a{ background:#eef1f5; padding:3px 8px; border-radius:6px; }
-  .add-contact{ border:1px dashed var(--line); border-radius:8px; padding:10px 12px; background:#fbfaf6; display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; }
-  .add-contact input{ padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; }
-
   .note{
     border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:10px; background:#fffdf9;
   }
-  .note .meta{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); margin-bottom:6px; flex-wrap:wrap; gap:6px;}
+  .note .meta{ display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); margin-bottom:6px;}
   .note .text{ font-size:13.5px; line-height:1.45; white-space:pre-wrap; }
   .badge{
     font-family: "SFMono-Regular", Consolas, monospace;
@@ -186,349 +168,12 @@
 </style>
 </head>
 <body>
-<div id="root">
-  <header>
-    <div class="brand">
-      <div class="mark"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-      <div>
-        <h1>Dover Digital Signs</h1>
-        <div class="sub">Customer Tracker</div>
-      </div>
-    </div>
-    <div class="who">
-      <span>Signed in as</span>
-      <input id="userNameInput" type="text" placeholder="your name" value="">
-    </div>
-  </header>
-  <nav>
-    <button data-view="customers" class="active">Customers</button>
-    <button data-view="folders" class="">Folders</button>
-    <button data-view="followups" class="">Follow-Ups (3)</button>
-  </nav>
-  <main>
-    <div class="toolbar">
-      <input id="searchInput" type="text" placeholder="Search company, address, contact, or note text…" value="">
-      <select id="sourceFilterSel">
-        <option value="ALL" selected="">All sources</option>
-        <option value="Dover Digital Signs (Main)">Dover Digital Signs (Main)</option>
-      </select>
-      <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
-    </div>
-    
-    <div class="layout">
-      <div class="card list">
-        
-            <div class="cust-item " data-id="37760b90-2900-4db3-8d28-50e4dae04a85">
-              <div class="name">)akland/Scotland Community Church</div>
-              <div class="addr">10 Church St. W., Scotland, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item sel" data-id="3f1e2c7f-33ee-4012-b745-a4ed69382f02">
-              <div class="name">A&amp;W Brantford</div>
-              <div class="addr">30 Lynden Rd, Brantford, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="f0241889-fa2b-4ff2-b6db-f6b2d9c84420">
-              <div class="name">Besma Family Dental</div>
-              <div class="addr">167 Riverside Dr, Welland, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="0a7eade0-5d68-47cd-adb2-96b5a92d85c1">
-              <div class="name">Bethel Church Acton</div>
-              <div class="addr">365 Queen St., Acton, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="bf85e064-de90-429e-9aca-4ef6c237b68b">
-              <div class="name">Bethel Reformed Church</div>
-              <div class="addr">506 West St, Brantford, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="1a5be9dc-407e-4e72-a276-88324d945d54">
-              <div class="name">Cainsville Home Hardwear</div>
-              <div class="addr">490 Brant County Rd. 18, Brant, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="a26fa226-dc36-4a7f-a6d7-580cd54dd5a9">
-              <div class="name">Caledonia Veterinary Clinis</div>
-              <div class="addr">322 Argyle St.S., Caledonia, on</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="05c9641e-ece0-4233-8073-1a590b74f69c">
-              <div class="name">Carlton Animal Hospital</div>
-              <div class="addr">145 CarltonSt Unit 18, St Catherines, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="15347971-04ce-4563-aaeb-27fe2d961a18">
-              <div class="name">CMHA Brant Haldimand Norfolk Branch</div>
-              <div class="addr">395 Queensway W., Simcoe, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="c7cdb34b-50ef-4f00-b198-677c19841c6b">
-              <div class="name">Faith St. Thomas Church</div>
-              <div class="addr">345 Fairview Ave, St Thomas, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="628d1a41-33f1-4d23-83e5-f90e46b47397">
-              <div class="name">Family Worship Centre</div>
-              <div class="addr">4281 Queen St., Beamsville, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="26c4a7a8-b74a-402f-acc0-de075de292e5">
-              <div class="name">First Baptist Church</div>
-              <div class="addr">1565 Sydney Pl., Welland, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="3b222e60-8c68-480a-9a15-7f16d63cacde">
-              <div class="name">Glad Tidings Church | Burlington</div>
-              <div class="addr">1401 Guelph Line, Burlington, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="cfd2d702-36dd-48d2-a212-4964946ab9f4">
-              <div class="name">Jarvis Community Christian School</div>
-              <div class="addr">149 Talbot St E, Jarvis, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="beb1f81e-730a-4ec2-9960-cbdb1e0a1ce2">
-              <div class="name">North Broadway Church</div>
-              <div class="addr">6 North St. E., Tillsonberg, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="c85d9c78-de69-464a-b2b9-189b486d3dec">
-              <div class="name">RCL Br 345 East York</div>
-              <div class="addr">81 Pearl Rd, East York, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="ba75d3c7-4063-4250-bd6f-799cbac33062">
-              <div class="name">RCL Delhi</div>
-              <div class="addr">249 Main St., Delhi, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="ba7a3e86-ff73-4052-9dbd-f9450d82c6b2">
-              <div class="name">RCL Port ElginBr 340</div>
-              <div class="addr">630 Green St, Port Elgin, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="52f93311-29de-4f40-b06f-77d31a6eafdd">
-              <div class="name">Salvation Army Essex Community Church</div>
-              <div class="addr">26 Talbot St.S.PO Box 432, Essex, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="20260fe7-9568-4ab7-b023-d91f8fa92c15">
-              <div class="name">Selkirk Christian Chapel</div>
-              <div class="addr">20 Erie St., Selkirk, Ontario</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="c233c759-b6c4-49d0-9021-44ba28959e85">
-              <div class="name">Simcoe Gospel Chapel</div>
-              <div class="addr">4152 On-3, Simcoe, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="4b8ded28-1951-4856-8a7f-c051fb55753a">
-              <div class="name">Smithville United Church</div>
-              <div class="addr">116 West St, Smithville, on</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="47ecab76-80bd-4c98-8d9b-c4f935b5ccb9">
-              <div class="name">St James United</div>
-              <div class="addr">306 Parkside Dr, Waterdown, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="19d57930-0da0-45df-843a-b18eed0dd86e">
-              <div class="name">Tillsonburg Alliance Church</div>
-              <div class="addr">270 Quarter Town Line, Tillsonburg, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="93001cb7-a955-4ea4-b244-a6ccdeb0e098">
-              <div class="name">Trinity United Church</div>
-              <div class="addr">70 Mill St E., Acton, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="53ab6965-b523-4ca7-857c-661b01fb787b">
-              <div class="name">Visitors Inn</div>
-              <div class="addr">649 Main St,W, Hamilton, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="6d64359c-d467-4105-80d0-eb49b6267ab7">
-              <div class="name">Walton Memorial United Church</div>
-              <div class="addr">2489 Lakeshore Rd W,, Oakville, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="ca18dd20-7f07-4bfa-a7d3-ce057a7afbe5">
-              <div class="name">Wellspring Church</div>
-              <div class="addr">4457 New St,, Burlington, ON</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-            <div class="cust-item " data-id="bd302d87-18ca-48e9-b0c1-33b07925ddf6">
-              <div class="name">Willy Bulters Mudcat Bowling</div>
-              <div class="addr">1123 Broad St.E., Dunnville, On</div>
-              <div>
-                <span class="tag">Dover Digital Signs (Main)</span>
-                
-              </div>
-            </div>
-      </div>
-      <div class="card">
-        
-  <div class="detail">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-      <div>
-        <h2>A&amp;W Brantford</h2>
-        <div class="addr-line">30 Lynden Rd, Brantford, ON, N3R 8A4</div>
-      </div>
-      <div class="row-actions">
-        <button class="btn ghost small" data-share-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">Share</button>
-        <button class="btn ghost small" data-edit-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">Edit</button>
-        <button class="btn danger small" data-del-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">Delete</button>
-      </div>
-    </div>
-    <div class="grid2" style="margin-top:8px;">
-      <div>
-        <span class="tag">Dover Digital Signs (Main)</span>
-        
-      </div>
-      <div><strong>Existing sign size:</strong> —</div>
-    </div>
-    <div class="row-actions" style="align-items:center; margin-bottom:14px;">
-      <label style="font-size:12px; color:var(--muted); font-weight:600;">Folder:</label>
-      <select id="folderAssignSel" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
-        <option value="">— none —</option>
-        
-        <option value="__new__">+ New folder…</option>
-      </select>
-      <button class="btn small" id="assignFolderBtn" data-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">Add to Folder</button>
-    </div>
-
-    <div class="section-title">Contacts</div>
-    
-        <div class="contact-card">
-          <div>
-            <div class="cname">Elzbieta Czarny</div>
-            <div class="clinks">
-              <a href="tel:15197517744">Call 1-519-751-7744</a>
-              <a href="sms:15197517744">Text</a>
-              
-            </div>
-          </div>
-          <button class="btn ghost small" data-del-contact="40cc54e9-a47f-4c0c-9181-671a28279f5c" style="padding:2px 8px;">✕</button>
-        </div>
-    <div class="add-contact">
-      <div class="field" style="flex:1; min-width:120px;"><label>Name</label><input id="c_name" placeholder="Name"></div>
-      <div class="field" style="flex:1; min-width:120px;"><label>Phone</label><input id="c_phone" placeholder="Phone" class="mono"></div>
-      <div class="field" style="flex:1; min-width:140px;"><label>Email</label><input id="c_email" placeholder="Email"></div>
-      <button class="btn small" id="addContactBtn" data-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">+ Add Contact</button>
-    </div>
-
-    <div class="section-title">Add a note</div>
-    <div class="newnote">
-      <textarea id="noteText" placeholder="What did you discuss? Reader board condition, pricing, next steps…"></textarea>
-      <div class="row">
-        <label class="mono" style="font-size:11.5px;">Date of note
-          <input type="date" id="noteDate" value="2026-07-14">
-        </label>
-        <label class="mono" style="font-size:11.5px;">Follow up on
-          <input type="date" id="noteFollowUp">
-        </label>
-        <label style="font-size:12px;">Reader board photo(s)
-          <input type="file" id="notePhotos" accept="image/*" multiple="">
-        </label>
-        <button class="btn" id="saveNoteBtn" data-cust="3f1e2c7f-33ee-4012-b745-a4ed69382f02">Save Note</button>
-      </div>
-    </div>
-
-    <div class="section-title">History (0)</div>
-    <div class="empty">No notes yet for this customer.</div>
-  </div>
-      </div>
-    </div>
-  </main></div>
+<div id="root"></div>
 
 <script>
 /* =========================================================
-   CONFIG — Supabase project
+   CONFIG — fill these in from your Supabase project
+   Settings -> API -> Project URL / anon public key
    ========================================================= */
 const SUPABASE_URL = "https://nlahmlqtzgscxllzopua.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sYWhtbHF0emdzY3hsbHpvcHVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NzM2ODgsImV4cCI6MjA5OTQ0OTY4OH0.pmT48FdVOkKhBUto7Il1j4LeQ_j_o_XkLWyFl6qlltg";
@@ -541,13 +186,10 @@ const configured = !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includ
 const state = {
   customers: [],
   notes: [],
-  contacts: [],
-  folders: [],
   view: 'customers',
   selectedId: null,
   search: '',
   sourceFilter: 'ALL',
-  folderFilter: 'ALL',
   currentUser: localStorage.getItem('dds_user') || '',
   loading: true,
   error: null,
@@ -561,7 +203,6 @@ const DEFAULT_SOURCE = 'Dover Digital Signs (Main)';
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function telHref(phone){ return (phone||'').replace(/[^\d+]/g, ''); }
 function fmtDate(d){ if(!d) return ''; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function daysUntil(d){ const a = new Date(todayStr()+'T00:00:00'); const b = new Date(d+'T00:00:00'); return Math.round((b-a)/86400000); }
@@ -571,19 +212,15 @@ function saveUser(name){ state.currentUser = name; localStorage.setItem('dds_use
 async function loadAll(){
   if(!configured){ state.loading=false; render(); return; }
   state.loading = true; state.error = null; render();
-  const [{data:custs, error:cErr}, {data:notes, error:nErr}, {data:contacts, error:ctErr}, {data:folders, error:fErr}] = await Promise.all([
+  const [{data:custs, error:cErr}, {data:notes, error:nErr}] = await Promise.all([
     sb.from('customers').select('*'),
     sb.from('notes').select('*'),
-    sb.from('contacts').select('*'),
-    sb.from('folders').select('*'),
   ]);
-  if(cErr || nErr || ctErr || fErr){
-    state.error = (cErr && cErr.message) || (nErr && nErr.message) || (ctErr && ctErr.message) || (fErr && fErr.message);
+  if(cErr || nErr){
+    state.error = (cErr && cErr.message) || (nErr && nErr.message);
   } else {
     state.customers = custs || [];
     state.notes = notes || [];
-    state.contacts = contacts || [];
-    state.folders = folders || [];
   }
   state.loading = false;
   render();
@@ -595,48 +232,23 @@ function allSources(){
   state.customers.forEach(c => s.add(c.source || DEFAULT_SOURCE));
   return Array.from(s);
 }
-function allFolders(){
-  const names = new Set(state.folders.map(f=>f.name));
-  state.customers.forEach(c => { if(c.folder) names.add(c.folder); });
-  return Array.from(names).sort();
-}
-async function ensureFolderExists(name){
-  if(!name) return;
-  if(state.folders.some(f=>f.name===name)) return;
-  const { data, error } = await sb.from('folders').insert([{ name }]).select();
-  if(error){
-    if(!/duplicate|unique/i.test(error.message)) showToast('Could not create folder: ' + error.message);
-    return;
-  }
-  if(data && data[0]) state.folders.push(data[0]);
-}
-function contactsFor(custId){
-  return state.contacts.filter(ct => ct.customer_id === custId);
-}
 function filteredCustomers(){
   let list = state.customers;
   if(state.sourceFilter !== 'ALL'){
     list = list.filter(c => (c.source || DEFAULT_SOURCE) === state.sourceFilter);
-  }
-  if(state.folderFilter !== 'ALL'){
-    list = list.filter(c => (c.folder || '') === state.folderFilter);
   }
   const q = state.search.trim().toLowerCase();
   if(q){
     const matchingNoteCustIds = new Set(
       state.notes.filter(n => (n.note_text||'').toLowerCase().includes(q)).map(n => n.customer_id)
     );
-    const matchingContactCustIds = new Set(
-      state.contacts.filter(ct => (ct.name||'').toLowerCase().includes(q) || (ct.phone||'').toLowerCase().includes(q))
-        .map(ct => ct.customer_id)
-    );
     list = list.filter(c =>
       (c.company||'').toLowerCase().includes(q) ||
       (c.street||'').toLowerCase().includes(q) ||
       (c.city||'').toLowerCase().includes(q) ||
+      (c.contact||'').toLowerCase().includes(q) ||
       (c.postal_code||'').toLowerCase().includes(q) ||
-      matchingNoteCustIds.has(c.id) ||
-      matchingContactCustIds.has(c.id)
+      matchingNoteCustIds.has(c.id)
     );
   }
   return list.slice().sort((a,b)=> (a.company||'').localeCompare(b.company||''));
@@ -706,7 +318,6 @@ async function deleteCustomer(id){
   if(error){ showToast('Delete failed: ' + error.message); return; }
   state.customers = state.customers.filter(c=>c.id!==id);
   state.notes = state.notes.filter(n=>n.customer_id!==id);
-  state.contacts = state.contacts.filter(ct=>ct.customer_id!==id);
   state.selectedId = null;
   render();
   showToast('Customer deleted');
@@ -723,19 +334,6 @@ async function deleteNote(id){
   const { error } = await sb.from('notes').delete().eq('id', id);
   if(error){ showToast('Delete failed: ' + error.message); return; }
   state.notes = state.notes.filter(n=>n.id!==id);
-  render();
-}
-async function addContact(custId, data){
-  const { data: rows, error } = await sb.from('contacts').insert([{ customer_id: custId, ...data }]).select();
-  if(error){ showToast('Save failed: ' + error.message); return; }
-  state.contacts.push(rows[0]);
-  render();
-  showToast('Contact added');
-}
-async function deleteContact(id){
-  const { error } = await sb.from('contacts').delete().eq('id', id);
-  if(error){ showToast('Delete failed: ' + error.message); return; }
-  state.contacts = state.contacts.filter(ct=>ct.id!==id);
   render();
 }
 
@@ -760,8 +358,6 @@ function render(){
     body = `<main><div class="errbox">Couldn't load data: ${esc(state.error)}</div></main>`;
   } else if(state.view === 'customers'){
     body = customersViewHtml();
-  } else if(state.view === 'folders'){
-    body = foldersViewHtml();
   } else {
     body = followupsViewHtml();
   }
@@ -795,43 +391,15 @@ function navHtml(){
   return `
   <nav>
     <button data-view="customers" class="${state.view==='customers'?'active':''}">Customers</button>
-    <button data-view="folders" class="${state.view==='folders'?'active':''}">Folders</button>
     <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups${
       (()=>{ const n = allFollowUps().filter(x=>daysUntil(x.note.follow_up_date)<=0).length; return n>0 ? ` (${n})` : ''; })()
     }</button>
   </nav>`;
 }
 
-function foldersViewHtml(){
-  const folders = allFolders();
-  const noFolderCount = state.customers.filter(c=>!c.folder).length;
-  return `
-  <main>
-    <div class="toolbar">
-      <div style="font-size:13.5px; color:var(--muted); flex:1;">Tap a folder to see the customers inside it.</div>
-      <button class="btn amber" id="newFolderBtn">+ New Folder</button>
-    </div>
-    <div class="card list" style="max-height:none;">
-      ${folders.length===0 && noFolderCount===0 ? `<div class="empty">No folders yet. Add one from a customer's page.</div>` : `
-        ${folders.map(f => `
-          <div class="cust-item" data-folder="${esc(f)}">
-            <div class="name">${esc(f)}</div>
-            <div class="addr">${state.customers.filter(c=>c.folder===f).length} customer(s)</div>
-          </div>`).join('')}
-        ${noFolderCount>0 ? `
-          <div class="cust-item" data-folder="">
-            <div class="name">No Folder</div>
-            <div class="addr">${noFolderCount} customer(s)</div>
-          </div>` : ''}
-      `}
-    </div>
-  </main>`;
-}
-
 function customersViewHtml(){
   const list = filteredCustomers();
   const sel = state.customers.find(c=>c.id===state.selectedId);
-  const folders = allFolders();
   return `
   <main>
     <div class="toolbar">
@@ -842,7 +410,6 @@ function customersViewHtml(){
       </select>
       <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
     </div>
-    ${state.folderFilter!=='ALL' ? `<div class="folder-chips"><span class="folder-chip active" data-folder="ALL">Folder: ${esc(state.folderFilter||'No Folder')} — tap to clear</span></div>` : ''}
     <div class="layout">
       <div class="card list">
         ${list.length===0 ? `<div class="empty">No customers yet.<br>Add your first one to get started.</div>` :
@@ -850,10 +417,7 @@ function customersViewHtml(){
             <div class="cust-item ${c.id===state.selectedId?'sel':''}" data-id="${c.id}">
               <div class="name">${esc(c.company||'(no company name)')}</div>
               <div class="addr">${esc([c.street,c.city,c.province].filter(Boolean).join(', '))}</div>
-              <div>
-                <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
-                ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
-              </div>
+              <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
             </div>`).join('')}
       </div>
       <div class="card">
@@ -865,7 +429,6 @@ function customersViewHtml(){
 
 function customerDetailHtml(c){
   const notes = notesFor(c.id);
-  const contacts = contactsFor(c.id);
   return `
   <div class="detail">
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -874,47 +437,18 @@ function customerDetailHtml(c){
         <div class="addr-line">${esc([c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', ')) || 'No address on file'}</div>
       </div>
       <div class="row-actions">
-        <button class="btn ghost small" data-share-cust="${c.id}">Share</button>
         <button class="btn ghost small" data-edit-cust="${c.id}">Edit</button>
         <button class="btn danger small" data-del-cust="${c.id}">Delete</button>
       </div>
     </div>
     <div class="grid2" style="margin-top:8px;">
-      <div>
-        <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
-        ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
-      </div>
+      <div><span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span></div>
+    </div>
+    <div class="grid2">
+      <div><strong>Contact:</strong> ${esc(c.contact)||'—'}</div>
+      <div><strong>Phone:</strong> <span class="mono">${esc(c.phone)||'—'}</span></div>
+      <div><strong>Email:</strong> ${esc(c.email)||'—'}</div>
       <div><strong>Existing sign size:</strong> ${esc(c.size_of_existing_sign)||'—'}</div>
-    </div>
-    <div class="row-actions" style="align-items:center; margin-bottom:14px;">
-      <label style="font-size:12px; color:var(--muted); font-weight:600;">Folder:</label>
-      <select id="folderAssignSel" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
-        <option value="">— none —</option>
-        ${allFolders().map(f=>`<option value="${esc(f)}" ${c.folder===f?'selected':''}>${esc(f)}</option>`).join('')}
-        <option value="__new__">+ New folder…</option>
-      </select>
-      <button class="btn small" id="assignFolderBtn" data-cust="${c.id}">Add to Folder</button>
-    </div>
-
-    <div class="section-title">Contacts</div>
-    ${contacts.length===0 ? `<div class="empty" style="padding:14px;">No contacts added yet.</div>` :
-      contacts.map(ct => `
-        <div class="contact-card">
-          <div>
-            <div class="cname">${esc(ct.name)||'(no name)'}</div>
-            <div class="clinks">
-              ${ct.phone ? `<a href="tel:${telHref(ct.phone)}">Call ${esc(ct.phone)}</a>` : ''}
-              ${ct.phone ? `<a href="sms:${telHref(ct.phone)}">Text</a>` : ''}
-              ${ct.email ? `<a href="mailto:${esc(ct.email)}">Email</a>` : ''}
-            </div>
-          </div>
-          <button class="btn ghost small" data-del-contact="${ct.id}" style="padding:2px 8px;">✕</button>
-        </div>`).join('')}
-    <div class="add-contact">
-      <div class="field" style="flex:1; min-width:120px;"><label>Name</label><input id="c_name" placeholder="Name"></div>
-      <div class="field" style="flex:1; min-width:120px;"><label>Phone</label><input id="c_phone" placeholder="Phone" class="mono"></div>
-      <div class="field" style="flex:1; min-width:140px;"><label>Email</label><input id="c_email" placeholder="Email"></div>
-      <button class="btn small" id="addContactBtn" data-cust="${c.id}">+ Add Contact</button>
     </div>
 
     <div class="section-title">Add a note</div>
@@ -936,7 +470,7 @@ function customerDetailHtml(c){
 
     <div class="section-title">History (${notes.length})</div>
     ${notes.length===0 ? `<div class="empty">No notes yet for this customer.</div>` :
-      notes.map(n => noteHtml(n, c.company)).join('')}
+      notes.map(n => noteHtml(n)).join('')}
   </div>`;
 }
 
@@ -951,7 +485,7 @@ function followUpBadge(followUpDate){
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
-function noteHtml(n, companyName){
+function noteHtml(n){
   return `
   <div class="note">
     <div class="meta">
@@ -1004,14 +538,13 @@ function customerFormModal(existing){
       <h3>${existing ? 'Edit Customer' : 'New Customer'}</h3>
       <div class="grid2">
         <div class="field"><label>Company</label><input id="f_company" value="${esc(c.company)}"></div>
-        <div class="field"><label>Folder / Group</label>
-          <input id="f_folder" list="folderOptions" value="${esc(c.folder)}" placeholder="e.g. Churches, Retail">
-          <datalist id="folderOptions">${allFolders().map(f=>`<option value="${esc(f)}">`).join('')}</datalist>
-        </div>
+        <div class="field"><label>Contact</label><input id="f_contact" value="${esc(c.contact)}"></div>
         <div class="field"><label>Street</label><input id="f_street" value="${esc(c.street)}"></div>
         <div class="field"><label>City</label><input id="f_city" value="${esc(c.city)}"></div>
         <div class="field"><label>Province</label><input id="f_province" value="${esc(c.province)}"></div>
         <div class="field"><label>Postal Code</label><input id="f_postal" class="mono" value="${esc(c.postal_code)}"></div>
+        <div class="field"><label>Phone Number</label><input id="f_phone" class="mono" value="${esc(c.phone)}"></div>
+        <div class="field"><label>Email</label><input id="f_email" value="${esc(c.email)}"></div>
         <div class="field"><label>Size of Existing Sign</label><input id="f_size" value="${esc(c.size_of_existing_sign)}"></div>
         <div class="field"><label>Source (office / franchisee)</label>
           <input id="f_source" list="sourceOptions" value="${esc(c.source||DEFAULT_SOURCE)}">
@@ -1043,87 +576,25 @@ function bindEvents(){
 
   const searchInput = document.getElementById('searchInput');
   if(searchInput){
-    searchInput.oninput = e => {
-      const pos = e.target.selectionStart;
-      state.search = e.target.value;
-      render();
-      const freshInput = document.getElementById('searchInput');
-      if(freshInput){ freshInput.focus(); freshInput.setSelectionRange(pos, pos); }
-    };
+    searchInput.oninput = e => { state.search = e.target.value; render(); searchInput.focus(); searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length); };
   }
   const sourceSel = document.getElementById('sourceFilterSel');
   if(sourceSel){ sourceSel.onchange = e => { state.sourceFilter = e.target.value; render(); }; }
-  document.querySelectorAll('.folder-chip').forEach(el=>{
-    el.onclick = () => { state.folderFilter = el.dataset.folder; render(); };
-  });
-  const newFolderBtn = document.getElementById('newFolderBtn');
-  if(newFolderBtn){
-    newFolderBtn.onclick = async () => {
-      const name = (prompt('Folder name:') || '').trim();
-      if(!name) return;
-      await ensureFolderExists(name);
-      render();
-      showToast('Folder created');
-    };
-  }
-
-  const assignFolderBtn = document.getElementById('assignFolderBtn');
-  if(assignFolderBtn){
-    assignFolderBtn.onclick = async () => {
-      const sel = document.getElementById('folderAssignSel');
-      let val = sel.value;
-      if(val === '__new__'){
-        val = (prompt('New folder name:') || '').trim();
-        if(!val) return;
-      }
-      if(val) await ensureFolderExists(val);
-      await updateCustomer(assignFolderBtn.dataset.cust, { folder: val || null });
-    };
-  }
 
   const newBtn = document.getElementById('newCustomerBtn');
   if(newBtn){ newBtn.onclick = () => { state.addingCustomer = true; render(); }; }
 
-  document.querySelectorAll('.cust-item[data-id]').forEach(el=>{
+  document.querySelectorAll('.cust-item').forEach(el=>{
     el.onclick = () => { state.selectedId = el.dataset.id; render(); };
   });
-  document.querySelectorAll('.cust-item[data-folder]').forEach(el=>{
-    el.onclick = () => { state.folderFilter = el.dataset.folder; state.view = 'customers'; state.selectedId = null; render(); };
-  });
 
-  document.querySelectorAll('[data-share-cust]').forEach(el=>{
-    el.onclick = async (e) => {
-      e.stopPropagation();
-      const c = state.customers.find(c=>c.id===el.dataset.shareCust);
-      if(!c) return;
-      const notes = notesFor(c.id);
-      const latest = notes[0];
-      const lines = [
-        c.company || '(no company name)',
-        [c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', '),
-      ];
-      if(latest){
-        lines.push('');
-        lines.push(`Latest note (${fmtDate(latest.date_of_note)}): ${latest.note_text}`);
-        if(latest.follow_up_date) lines.push(`Follow up: ${fmtDate(latest.follow_up_date)}`);
-      }
-      const shareText = lines.join('\n');
-      if(navigator.share){
-        try{ await navigator.share({ title: c.company || 'Customer', text: shareText }); }
-        catch(err){ /* user cancelled the share sheet, do nothing */ }
-      } else {
-        try{ await navigator.clipboard.writeText(shareText); showToast('Copied — paste it into a text, email, etc.'); }
-        catch(err){ showToast('Could not share automatically'); }
-      }
-    };
-  });
   document.querySelectorAll('[data-edit-cust]').forEach(el=>{
     el.onclick = (e) => { e.stopPropagation(); state.editingCustomer = true; render(); };
   });
   document.querySelectorAll('[data-del-cust]').forEach(el=>{
     el.onclick = (e) => {
       e.stopPropagation();
-      if(confirm('Delete this customer, their contacts, and all their notes? This cannot be undone.')){
+      if(confirm('Delete this customer and all their notes? This cannot be undone.')){
         deleteCustomer(el.dataset.delCust);
       }
     };
@@ -1134,31 +605,11 @@ function bindEvents(){
   document.querySelectorAll('[data-del-note]').forEach(el=>{
     el.onclick = () => { if(confirm('Delete this note?')) deleteNote(el.dataset.delNote); };
   });
-  document.querySelectorAll('[data-del-contact]').forEach(el=>{
-    el.onclick = () => { if(confirm('Remove this contact?')) deleteContact(el.dataset.delContact); };
-  });
-  document.querySelectorAll('[data-copy-note]').forEach(el=>{
-    el.onclick = async () => {
-      try{ await navigator.clipboard.writeText(el.dataset.copyNote); showToast('Copied — paste into a text or email'); }
-      catch(e){ showToast('Could not copy automatically'); }
-    };
-  });
   document.querySelectorAll('[data-lightbox]').forEach(el=>{
     el.onclick = () => { state.lightboxSrc = el.dataset.lightbox; render(); };
   });
   const lb = document.getElementById('lightbox');
   if(lb){ lb.onclick = () => { state.lightboxSrc = null; render(); }; }
-
-  const addContactBtn = document.getElementById('addContactBtn');
-  if(addContactBtn){
-    addContactBtn.onclick = async () => {
-      const name = document.getElementById('c_name').value.trim();
-      const phone = document.getElementById('c_phone').value.trim();
-      const email = document.getElementById('c_email').value.trim();
-      if(!name && !phone && !email){ showToast('Add at least a name, phone, or email'); return; }
-      await addContact(addContactBtn.dataset.cust, { name, phone, email });
-    };
-  }
 
   const saveNoteBtn = document.getElementById('saveNoteBtn');
   if(saveNoteBtn){
@@ -1190,16 +641,17 @@ function bindEvents(){
     saveCustBtn.onclick = async () => {
       const data = {
         company: document.getElementById('f_company').value.trim(),
-        folder: document.getElementById('f_folder').value.trim() || null,
+        contact: document.getElementById('f_contact').value.trim(),
         street: document.getElementById('f_street').value.trim(),
         city: document.getElementById('f_city').value.trim(),
         province: document.getElementById('f_province').value.trim(),
         postal_code: document.getElementById('f_postal').value.trim(),
+        phone: document.getElementById('f_phone').value.trim(),
+        email: document.getElementById('f_email').value.trim(),
         size_of_existing_sign: document.getElementById('f_size').value.trim(),
         source: document.getElementById('f_source').value.trim() || DEFAULT_SOURCE,
       };
       if(!data.company){ showToast('Company name is required'); return; }
-      if(data.folder) await ensureFolderExists(data.folder);
       const existingId = saveCustBtn.dataset.existing;
       if(existingId){ await updateCustomer(existingId, data); }
       else{ await addCustomer(data); }
@@ -1209,6 +661,5 @@ function bindEvents(){
 
 loadAll();
 </script>
-
-
-</body></html>
+</body>
+</html>
