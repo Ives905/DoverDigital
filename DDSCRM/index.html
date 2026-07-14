@@ -285,6 +285,20 @@ async function ensureFolderExists(name){
   }
   if(data && data[0]) state.folders.push(data[0]);
 }
+async function deleteFolder(name){
+  const { error: uErr } = await sb.from('customers').update({ folder: null }).eq('folder', name);
+  if(uErr){ showToast('Delete failed: ' + uErr.message); return; }
+  const folderRow = state.folders.find(f=>f.name===name);
+  if(folderRow){
+    const { error: dErr } = await sb.from('folders').delete().eq('id', folderRow.id);
+    if(dErr){ showToast('Delete failed: ' + dErr.message); return; }
+    state.folders = state.folders.filter(f=>f.id!==folderRow.id);
+  }
+  state.customers.forEach(c=>{ if(c.folder===name) c.folder=null; });
+  if(state.folderFilter===name) state.folderFilter='ALL';
+  render();
+  showToast('Folder deleted');
+}
 function contactsFor(custId){
   return state.contacts.filter(ct => ct.customer_id === custId);
 }
@@ -490,9 +504,12 @@ function foldersViewHtml(){
     <div class="card list" style="max-height:none;">
       ${folders.length===0 && noFolderCount===0 ? `<div class="empty">No folders yet. Add one from a customer's page.</div>` : `
         ${folders.map(f => `
-          <div class="cust-item" data-folder="${esc(f)}">
-            <div class="name">${esc(f)}</div>
-            <div class="addr">${state.customers.filter(c=>c.folder===f).length} customer(s)</div>
+          <div class="cust-item" data-folder="${esc(f)}" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="name">${esc(f)}</div>
+              <div class="addr">${state.customers.filter(c=>c.folder===f).length} customer(s)</div>
+            </div>
+            <button class="btn ghost small" data-del-folder="${esc(f)}" style="padding:2px 8px;">✕</button>
           </div>`).join('')}
         ${noFolderCount>0 ? `
           <div class="cust-item" data-folder="">
@@ -765,6 +782,14 @@ function bindEvents(){
   });
   document.querySelectorAll('.cust-item[data-folder]').forEach(el=>{
     el.onclick = () => { state.folderFilter = el.dataset.folder; state.view = 'customers'; state.selectedId = null; render(); };
+  });
+  document.querySelectorAll('[data-del-folder]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      if(confirm(`Delete the "${el.dataset.delFolder}" folder? Customers inside it will not be deleted, just unassigned from it.`)){
+        deleteFolder(el.dataset.delFolder);
+      }
+    };
   });
 
   document.querySelectorAll('[data-share-cust]').forEach(el=>{
