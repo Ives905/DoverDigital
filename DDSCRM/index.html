@@ -104,6 +104,11 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
 
   .layout{ display:grid; grid-template-columns:340px 1fr; gap:18px; align-items:start; }
   @media (max-width:860px){ .layout{ grid-template-columns:1fr; } }
+  .back-to-list{ display:none; }
+  @media (max-width:860px){
+    .back-to-list{ display:inline-flex; margin-bottom:12px; }
+    .layout.has-selection .list{ display:none; }
+  }
 
   .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); }
   .list{ max-height:74vh; overflow:auto; }
@@ -536,7 +541,7 @@ function customersViewHtml(){
       <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
     </div>
     ${state.folderFilter!=='ALL' ? `<div class="folder-chips"><span class="folder-chip active" data-folder="ALL">Folder: ${esc(state.folderFilter||'No Folder')} — tap to clear</span></div>` : ''}
-    <div class="layout">
+    <div class="layout ${sel ? 'has-selection' : ''}">
       <div class="card list">
         ${list.length===0 ? `<div class="empty">No customers yet.<br>Add your first one to get started.</div>` :
           list.map(c => `
@@ -561,6 +566,7 @@ function customerDetailHtml(c){
   const contacts = contactsFor(c.id);
   return `
   <div class="detail">
+    <button class="btn ghost small back-to-list" id="backToListBtn">← Back to list</button>
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
       <div>
         <h2>${esc(c.company||'(no company name)')}</h2>
@@ -818,6 +824,9 @@ function bindEvents(){
       }
     };
   });
+  const backToListBtn = document.getElementById('backToListBtn');
+  if(backToListBtn){ backToListBtn.onclick = () => { state.selectedId = null; render(); }; }
+
   document.querySelectorAll('[data-edit-cust]').forEach(el=>{
     el.onclick = (e) => { e.stopPropagation(); state.editingCustomer = true; render(); };
   });
