@@ -604,7 +604,7 @@ function customerDetailHtml(c){
             <div class="clinks">
               ${ct.phone ? `<a href="tel:${telHref(ct.phone)}">Call ${esc(ct.phone)}</a>` : ''}
               ${ct.phone ? `<a href="sms:${telHref(ct.phone)}">Text</a>` : ''}
-              ${ct.email ? `<a href="mailto:${esc(ct.email)}">Email</a>` : ''}
+              ${ct.email ? `<span class="clinks-email" data-copy-email="${esc(ct.email)}" style="cursor:pointer; background:#eef1f5; padding:3px 8px; border-radius:6px; font-size:12px; color:var(--navy);">${esc(ct.email)}</span>` : ''}
             </div>
           </div>
           <button class="btn ghost small" data-del-contact="${ct.id}" style="padding:2px 8px;">✕</button>
@@ -846,6 +846,12 @@ function bindEvents(){
   });
   document.querySelectorAll('[data-del-contact]').forEach(el=>{
     el.onclick = () => { if(confirm('Remove this contact?')) deleteContact(el.dataset.delContact); };
+  });
+  document.querySelectorAll('[data-copy-email]').forEach(el=>{
+    el.onclick = async () => {
+      try{ await navigator.clipboard.writeText(el.dataset.copyEmail); showToast('Email copied'); }
+      catch(e){ showToast('Could not copy automatically'); }
+    };
   });
   document.querySelectorAll('[data-copy-note]').forEach(el=>{
     el.onclick = async () => {
