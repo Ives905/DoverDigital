@@ -775,7 +775,10 @@ function customerDetailHtml(c){
     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
       <div>
         <h2>${esc(c.company||'(no company name)')}</h2>
-        <div class="addr-line">${esc([c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', ')) || 'No address on file'}</div>
+        <div class="addr-line">
+          ${esc([c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', ')) || 'No address on file'}
+          ${(c.street || c.city) ? ` · <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([c.street, c.city, c.province, c.postal_code].filter(Boolean).join(', '))}" target="_blank" rel="noopener">View on Google Maps</a>` : ''}
+        </div>
       </div>
       <div class="row-actions">
         <button class="btn ghost small" data-share-cust="${c.id}">Share</button>
