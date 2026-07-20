@@ -219,6 +219,15 @@ const configured = !!sb && !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KE
 const libraryFailedToLoad = typeof window.supabase === 'undefined';
 
 const state = {
+  session: null,
+  profile: null,
+  profilesList: [],
+  territories: [],
+  authMode: 'login',
+  authError: null,
+  authBusy: false,
+  bootLoading: true,
+
   customers: [],
   notes: [],
   contacts: [],
@@ -226,18 +235,15 @@ const state = {
   view: 'customers',
   selectedId: null,
   search: '',
-  sourceFilter: 'ALL',
   folderFilter: 'ALL',
-  currentUser: localStorage.getItem('dds_user') || '',
   loading: true,
   error: null,
   toast: null,
   lightboxSrc: null,
   addingCustomer: false,
   editingCustomer: false,
+  addingFolder: false,
 };
-
-const DEFAULT_SOURCE = 'Dover Digital Signs (Main)';
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -245,45 +251,76 @@ function telHref(phone){ return (phone||'').replace(/[^\d+]/g, ''); }
 function fmtDate(d){ if(!d) return ''; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function daysUntil(d){ const a = new Date(todayStr()+'T00:00:00'); const b = new Date(d+'T00:00:00'); return Math.round((b-a)/86400000); }
-function showToast(msg){ state.toast = msg; render(); setTimeout(()=>{ state.toast=null; render(); }, 2200); }
-function saveUser(name){ state.currentUser = name; localStorage.setItem('dds_user', name); }
+function showToast(msg){ state.toast = msg; render(); setTimeout(()=>{ state.toast=null; render(); }, 2600); }
+function toastHtml(){ return state.toast ? `<div class="toast">${esc(state.toast)}</div>` : ''; }
+function lightboxHtml(){ return state.lightboxSrc ? `<div class="lightbox" id="lightbox"><img src="${state.lightboxSrc}"></div>` : ''; }
+function territoryNameFor(id){ const t = state.territories.find(t=>t.id===id); return t ? t.name : '—'; }
+function isAdmin(){ return state.profile && state.profile.role === 'admin'; }
 
-async function loadAll(){
-  if(!configured){ state.loading=false; render(); return; }
-  state.loading = true; state.error = null; render();
-  const [{data:custs, error:cErr}, {data:notes, error:nErr}, {data:contacts, error:ctErr}, {data:folders, error:fErr}] = await Promise.all([
-    sb.from('customers').select('*'),
-    sb.from('notes').select('*'),
-    sb.from('contacts').select('*'),
-    sb.from('folders').select('*'),
-  ]);
-  if(cErr || nErr || ctErr || fErr){
-    state.error = (cErr && cErr.message) || (nErr && nErr.message) || (ctErr && ctErr.message) || (fErr && fErr.message);
-  } else {
-    state.customers = custs || [];
-    state.notes = notes || [];
-    state.contacts = contacts || [];
-    state.folders = folders || [];
+// ---------- auth / bootstrap ----------
+async function boot(){
+  if(!configured){ state.bootLoading = false; render(); return; }
+  const { data } = await sb.auth.getSession();
+  state.session = data.session;
+  if(state.session){ await afterLogin(); }
+  else { state.bootLoading = false; render(); }
+
+  sb.auth.onAuthStateChange((event, session) => {
+    const hadSession = !!state.session;
+    state.session = session;
+    if(session && !hadSession){ afterLogin(); }
+    else if(!session){
+      state.profile = null; state.profilesList = []; state.territories = [];
+      state.customers = []; state.notes = []; state.contacts = []; state.folders = [];
+      state.bootLoading = false; render();
+    }
+  });
+}
+
+async function afterLogin(){
+  state.bootLoading = true; render();
+  const { data: prof, error } = await sb.from('profiles').select('*').eq('id', state.session.user.id).single();
+  if(error){
+    state.authError = 'Could not load your profile: ' + error.message;
+    state.bootLoading = false; render(); return;
   }
-  state.loading = false;
+  state.profile = prof;
+  const { data: terrs } = await sb.from('territories').select('*');
+  state.territories = terrs || [];
+  state.bootLoading = false;
+  if(isAdmin() || prof.territory_id){ await loadAll(); }
+  else { render(); }
+}
+
+async function doSignUp(email, password){
+  state.authBusy = true; state.authError = null; render();
+  const { error } = await sb.auth.signUp({ email, password });
+  state.authBusy = false;
+  if(error){ state.authError = error.message; render(); return; }
+  state.authMode = 'login';
+  state.authError = null;
   render();
+  showToast('Account created — check your email if confirmation is required, then log in.');
+}
+async function doLogin(email, password){
+  state.authBusy = true; state.authError = null; render();
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  state.authBusy = false;
+  if(error){ state.authError = error.message; render(); }
+}
+async function doSignOut(){
+  await sb.auth.signOut();
 }
 
 // ---------- derived helpers ----------
-function allSources(){
-  const s = new Set([DEFAULT_SOURCE]);
-  state.customers.forEach(c => s.add(c.source || DEFAULT_SOURCE));
-  return Array.from(s);
-}
 function allFolders(){
   const names = new Set(state.folders.map(f=>f.name));
-  state.customers.forEach(c => { if(c.folder) names.add(c.folder); });
   return Array.from(names).sort();
 }
-async function ensureFolderExists(name){
+async function ensureFolderExists(name, territory_id){
   if(!name) return;
   if(state.folders.some(f=>f.name===name)) return;
-  const { data, error } = await sb.from('folders').insert([{ name }]).select();
+  const { data, error } = await sb.from('folders').insert([{ name, territory_id }]).select();
   if(error){
     if(!/duplicate|unique/i.test(error.message)) showToast('Could not create folder: ' + error.message);
     return;
@@ -309,9 +346,6 @@ function contactsFor(custId){
 }
 function filteredCustomers(){
   let list = state.customers;
-  if(state.sourceFilter !== 'ALL'){
-    list = list.filter(c => (c.source || DEFAULT_SOURCE) === state.sourceFilter);
-  }
   if(state.folderFilter !== 'ALL'){
     list = list.filter(c => (c.folder || '') === state.folderFilter);
   }
@@ -376,7 +410,31 @@ async function uploadPhoto(custId, blob){
   return data.publicUrl;
 }
 
-// ---------- actions ----------
+// ---------- data actions ----------
+async function loadAll(){
+  state.loading = true; state.error = null; render();
+  const calls = [
+    sb.from('customers').select('*'),
+    sb.from('notes').select('*'),
+    sb.from('contacts').select('*'),
+    sb.from('folders').select('*'),
+  ];
+  if(isAdmin()) calls.push(sb.from('profiles').select('*'));
+
+  const results = await Promise.all(calls);
+  const errs = results.map(r=>r.error).filter(Boolean);
+  if(errs.length){
+    state.error = errs[0].message;
+  } else {
+    state.customers = results[0].data || [];
+    state.notes = results[1].data || [];
+    state.contacts = results[2].data || [];
+    state.folders = results[3].data || [];
+    if(isAdmin()) state.profilesList = (results[4] && results[4].data) || [];
+  }
+  state.loading = false;
+  render();
+}
 async function addCustomer(data){
   const { data: rows, error } = await sb.from('customers').insert([data]).select();
   if(error){ showToast('Save failed: ' + error.message); return; }
@@ -406,7 +464,7 @@ async function deleteCustomer(id){
   showToast('Customer deleted');
 }
 async function addNote(custId, data){
-  const payload = { customer_id: custId, created_by: state.currentUser || 'Unknown', ...data };
+  const payload = { customer_id: custId, created_by: state.profile.email, ...data };
   const { data: rows, error } = await sb.from('notes').insert([payload]).select();
   if(error){ showToast('Save failed: ' + error.message); return; }
   state.notes.push(rows[0]);
@@ -432,21 +490,45 @@ async function deleteContact(id){
   state.contacts = state.contacts.filter(ct=>ct.id!==id);
   render();
 }
+async function saveProfile(id, data){
+  const { error } = await sb.from('profiles').update(data).eq('id', id);
+  if(error){ showToast('Save failed: ' + error.message); return; }
+  const p = state.profilesList.find(p=>p.id===id);
+  if(p) Object.assign(p, data);
+  render();
+  showToast('Team member updated');
+}
 
 // ---------- render ----------
 function render(){
   const root = document.getElementById('root');
   if(!configured){
     const msg = libraryFailedToLoad
-      ? `Couldn't load a required file from the internet (the Supabase library). Check your internet connection and reload the page. If this keeps happening, the CDN link in the code may need updating.`
-      : `This app isn't connected to a database yet. Open <code>index.html</code> and fill in
-      <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the file.`;
-    root.innerHTML = headerHtml() + `<main><div class="errbox">${msg}</div></main>`;
-    bindHeaderEvents();
+      ? `Couldn't load a required file from the internet (the Supabase library). Check your internet connection and reload the page.`
+      : `This app isn't connected to a database yet. Open <code>index.html</code> and fill in <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> near the top of the file.`;
+    root.innerHTML = brandHeaderHtml() + `<main><div class="errbox">${msg}</div></main>`;
+    return;
+  }
+  if(state.bootLoading){
+    root.innerHTML = brandHeaderHtml() + '<div class="loading">Loading…</div>' + toastHtml();
+    return;
+  }
+  if(!state.session){
+    root.innerHTML = authScreenHtml() + toastHtml();
+    bindAuthEvents();
+    return;
+  }
+  if(!state.profile){
+    root.innerHTML = brandHeaderHtml() + '<div class="loading">Loading your profile…</div>' + toastHtml();
+    return;
+  }
+  if(!isAdmin() && !state.profile.territory_id){
+    root.innerHTML = pendingAssignmentHtml() + toastHtml();
+    bindPendingEvents();
     return;
   }
   if(state.loading){
-    root.innerHTML = headerHtml() + '<div class="loading">Loading customer data…</div>';
+    root.innerHTML = headerHtml() + '<div class="loading">Loading customer data…</div>' + toastHtml();
     bindHeaderEvents();
     return;
   }
@@ -457,19 +539,90 @@ function render(){
     body = customersViewHtml();
   } else if(state.view === 'folders'){
     body = foldersViewHtml();
+  } else if(state.view === 'team'){
+    body = teamViewHtml();
   } else {
     body = followupsViewHtml();
   }
 
-  root.innerHTML = headerHtml() + navHtml() + body +
-    (state.toast ? `<div class="toast">${esc(state.toast)}</div>` : '') +
-    (state.lightboxSrc ? `<div class="lightbox" id="lightbox"><img src="${state.lightboxSrc}"></div>` : '') +
-    modalsHtml();
-
+  root.innerHTML = headerHtml() + navHtml() + body + toastHtml() + lightboxHtml() + modalsHtml();
   bindEvents();
 }
 
+function brandHeaderHtml(){
+  return `
+  <header>
+    <div class="brand">
+      <div class="mark">${Array.from({length:12}).map(()=>'<span></span>').join('')}</div>
+      <div>
+        <h1>Dover Digital Signs</h1>
+        <div class="sub">Customer Tracker</div>
+      </div>
+    </div>
+  </header>`;
+}
+
+function authScreenHtml(){
+  return `
+  ${brandHeaderHtml()}
+  <main style="max-width:420px; margin:60px auto;">
+    <div class="card" style="padding:24px;">
+      <h2 style="margin-top:0;">${state.authMode==='login' ? 'Log In' : 'Create an Account'}</h2>
+      ${state.authError ? `<div class="errbox">${esc(state.authError)}</div>` : ''}
+      <div class="field" style="margin-bottom:10px;"><label>Email</label><input type="email" id="authEmail"></div>
+      <div class="field" style="margin-bottom:14px;"><label>Password</label><input type="password" id="authPassword"></div>
+      <button class="btn amber" id="authSubmitBtn" style="width:100%;" ${state.authBusy?'disabled':''}>
+        ${state.authBusy ? 'Please wait…' : (state.authMode==='login' ? 'Log In' : 'Sign Up')}
+      </button>
+      <div style="text-align:center; margin-top:14px; font-size:13px; color:var(--muted);">
+        ${state.authMode==='login'
+          ? `New here? <a href="#" id="toSignup">Create an account</a>`
+          : `Already have an account? <a href="#" id="toLogin">Log in</a>`}
+      </div>
+      ${state.authMode==='signup' ? `<div style="margin-top:10px; font-size:12px; color:var(--muted);">After signing up, an admin needs to assign you to a territory before you can see any customers.</div>` : ''}
+    </div>
+  </main>`;
+}
+function bindAuthEvents(){
+  const submitBtn = document.getElementById('authSubmitBtn');
+  if(submitBtn){
+    submitBtn.onclick = () => {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      if(!email || !password){ state.authError = 'Enter an email and password.'; render(); return; }
+      if(state.authMode==='login') doLogin(email, password);
+      else doSignUp(email, password);
+    };
+  }
+  const toSignup = document.getElementById('toSignup');
+  if(toSignup){ toSignup.onclick = (e) => { e.preventDefault(); state.authMode='signup'; state.authError=null; render(); }; }
+  const toLogin = document.getElementById('toLogin');
+  if(toLogin){ toLogin.onclick = (e) => { e.preventDefault(); state.authMode='login'; state.authError=null; render(); }; }
+}
+
+function pendingAssignmentHtml(){
+  return `
+  <header>
+    <div class="brand">
+      <div class="mark">${Array.from({length:12}).map(()=>'<span></span>').join('')}</div>
+      <div><h1>Dover Digital Signs</h1><div class="sub">Customer Tracker</div></div>
+    </div>
+    <div class="who"><button class="btn ghost small" id="signOutBtn2">Sign Out</button></div>
+  </header>
+  <main style="max-width:480px; margin:60px auto; text-align:center;">
+    <div class="card" style="padding:30px;">
+      <h2>Almost there</h2>
+      <p style="color:var(--muted);">Your account (${esc(state.profile.email)}) is created, but you haven't been assigned to a territory yet. Check back after an admin sets this up for you.</p>
+    </div>
+  </main>`;
+}
+function bindPendingEvents(){
+  const btn = document.getElementById('signOutBtn2');
+  if(btn){ btn.onclick = doSignOut; }
+}
+
 function headerHtml(){
+  const terrName = isAdmin() ? 'Admin — all territories' : territoryNameFor(state.profile.territory_id);
   return `
   <header>
     <div class="brand">
@@ -480,10 +633,14 @@ function headerHtml(){
       </div>
     </div>
     <div class="who">
-      <span>Signed in as</span>
-      <input id="userNameInput" type="text" placeholder="your name" value="${esc(state.currentUser)}">
+      <span>${esc(state.profile.email)} · ${esc(terrName)}</span>
+      <button class="btn ghost small" id="signOutBtn">Sign Out</button>
     </div>
   </header>`;
+}
+function bindHeaderEvents(){
+  const btn = document.getElementById('signOutBtn');
+  if(btn){ btn.onclick = doSignOut; }
 }
 
 function navHtml(){
@@ -494,7 +651,43 @@ function navHtml(){
     <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups${
       (()=>{ const n = allFollowUps().filter(x=>daysUntil(x.note.follow_up_date)<=0).length; return n>0 ? ` (${n})` : ''; })()
     }</button>
+    ${isAdmin() ? `<button data-view="team" class="${state.view==='team'?'active':''}">Team</button>` : ''}
   </nav>`;
+}
+
+function teamViewHtml(){
+  return `
+  <main>
+    <div class="toolbar">
+      <div style="font-size:13.5px; color:var(--muted); flex:1;">Assign territories and roles to your team.</div>
+      <button class="btn amber" id="newTerritoryBtn">+ New Territory</button>
+    </div>
+    <div class="card" style="padding:16px; margin-bottom:16px;">
+      <div class="section-title">Territories</div>
+      ${state.territories.map(t=>`<span class="tag" style="font-size:12px; padding:4px 10px;">${esc(t.name)}</span>`).join(' ') || '<span style="color:var(--muted); font-size:13px;">None yet.</span>'}
+    </div>
+    <div class="card">
+      ${state.profilesList.length===0 ? `<div class="empty">No team members yet.</div>` :
+      state.profilesList.map(p => `
+        <div class="followup-row">
+          <div>
+            <div class="co">${esc(p.email)}</div>
+            <div class="snippet">${p.role==='admin' ? 'Admin' : territoryNameFor(p.territory_id)}</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <select data-role-sel="${p.id}">
+              <option value="user" ${p.role==='user'?'selected':''}>User</option>
+              <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
+            </select>
+            <select data-territory-sel="${p.id}">
+              <option value="">— none —</option>
+              ${state.territories.map(t=>`<option value="${t.id}" ${p.territory_id===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}
+            </select>
+            <button class="btn small" data-save-profile="${p.id}">Save</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  </main>`;
 }
 
 function foldersViewHtml(){
@@ -507,7 +700,7 @@ function foldersViewHtml(){
       <button class="btn amber" id="newFolderBtn">+ New Folder</button>
     </div>
     <div class="card list" style="max-height:none;">
-      ${folders.length===0 && noFolderCount===0 ? `<div class="empty">No folders yet. Add one from a customer's page.</div>` : `
+      ${folders.length===0 && noFolderCount===0 ? `<div class="empty">No folders yet.</div>` : `
         ${folders.map(f => `
           <div class="cust-item" data-folder="${esc(f)}" style="display:flex; justify-content:space-between; align-items:center;">
             <div>
@@ -529,15 +722,10 @@ function foldersViewHtml(){
 function customersViewHtml(){
   const list = filteredCustomers();
   const sel = state.customers.find(c=>c.id===state.selectedId);
-  const folders = allFolders();
   return `
   <main>
     <div class="toolbar">
       <input id="searchInput" type="text" placeholder="Search company, address, contact, or note text…" value="${esc(state.search)}">
-      <select id="sourceFilterSel">
-        <option value="ALL" ${state.sourceFilter==='ALL'?'selected':''}>All sources</option>
-        ${allSources().map(s=>`<option value="${esc(s)}" ${state.sourceFilter===s?'selected':''}>${esc(s)}</option>`).join('')}
-      </select>
       <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
     </div>
     ${state.folderFilter!=='ALL' ? `<div class="folder-chips"><span class="folder-chip active" data-folder="ALL">Folder: ${esc(state.folderFilter||'No Folder')} — tap to clear</span></div>` : ''}
@@ -549,7 +737,7 @@ function customersViewHtml(){
               <div class="name">${esc(c.company||'(no company name)')}</div>
               <div class="addr">${esc([c.street,c.city,c.province].filter(Boolean).join(', '))}</div>
               <div>
-                <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
+                <span class="tag">${esc(territoryNameFor(c.territory_id))}</span>
                 ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
               </div>
             </div>`).join('')}
@@ -580,7 +768,7 @@ function customerDetailHtml(c){
     </div>
     <div class="grid2" style="margin-top:8px;">
       <div>
-        <span class="tag">${esc(c.source||DEFAULT_SOURCE)}</span>
+        <span class="tag">${esc(territoryNameFor(c.territory_id))}</span>
         ${c.folder ? `<span class="tag">${esc(c.folder)}</span>` : ''}
       </div>
       <div><strong>Existing sign size:</strong> ${esc(c.size_of_existing_sign)||'—'}</div>
@@ -692,6 +880,7 @@ function followupsViewHtml(){
 function modalsHtml(){
   if(state.addingCustomer) return customerFormModal(null);
   if(state.editingCustomer) return customerFormModal(state.customers.find(c=>c.id===state.selectedId));
+  if(state.addingFolder) return folderFormModal();
   return '';
 }
 
@@ -703,19 +892,17 @@ function customerFormModal(existing){
       <h3>${existing ? 'Edit Customer' : 'New Customer'}</h3>
       <div class="grid2">
         <div class="field"><label>Company</label><input id="f_company" value="${esc(c.company)}"></div>
-        <div class="field"><label>Folder / Group</label>
-          <input id="f_folder" list="folderOptions" value="${esc(c.folder)}" placeholder="e.g. Churches, Retail">
-          <datalist id="folderOptions">${allFolders().map(f=>`<option value="${esc(f)}">`).join('')}</datalist>
-        </div>
         <div class="field"><label>Street</label><input id="f_street" value="${esc(c.street)}"></div>
         <div class="field"><label>City</label><input id="f_city" value="${esc(c.city)}"></div>
         <div class="field"><label>Province</label><input id="f_province" value="${esc(c.province)}"></div>
         <div class="field"><label>Postal Code</label><input id="f_postal" class="mono" value="${esc(c.postal_code)}"></div>
         <div class="field"><label>Size of Existing Sign</label><input id="f_size" value="${esc(c.size_of_existing_sign)}"></div>
-        <div class="field"><label>Source (office / franchisee)</label>
-          <input id="f_source" list="sourceOptions" value="${esc(c.source||DEFAULT_SOURCE)}">
-          <datalist id="sourceOptions">${allSources().map(s=>`<option value="${esc(s)}">`).join('')}</datalist>
-        </div>
+        ${isAdmin() ? `
+        <div class="field"><label>Territory</label>
+          <select id="f_territory">
+            ${state.territories.map(t=>`<option value="${t.id}" ${c.territory_id===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}
+          </select>
+        </div>` : ''}
       </div>
       <div class="row-actions" style="justify-content:flex-end; margin-top:14px;">
         <button class="btn ghost" id="cancelCustModal">Cancel</button>
@@ -725,14 +912,27 @@ function customerFormModal(existing){
   </div>`;
 }
 
-// ---------- events ----------
-function bindHeaderEvents(){
-  const input = document.getElementById('userNameInput');
-  if(input){
-    input.addEventListener('change', e => saveUser(e.target.value.trim()));
-  }
+function folderFormModal(){
+  return `
+  <div class="modal-bg" id="folderModalBg">
+    <div class="modal">
+      <h3>New Folder</h3>
+      <div class="field" style="margin-bottom:10px;"><label>Name</label><input id="folder_name"></div>
+      ${isAdmin() ? `
+      <div class="field"><label>Territory</label>
+        <select id="folder_territory">
+          ${state.territories.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+        </select>
+      </div>` : ''}
+      <div class="row-actions" style="justify-content:flex-end; margin-top:14px;">
+        <button class="btn ghost" id="cancelFolderModal">Cancel</button>
+        <button class="btn amber" id="saveFolderModal">Create</button>
+      </div>
+    </div>
+  </div>`;
 }
 
+// ---------- events ----------
 function bindEvents(){
   bindHeaderEvents();
 
@@ -750,17 +950,24 @@ function bindEvents(){
       if(freshInput){ freshInput.focus(); freshInput.setSelectionRange(pos, pos); }
     };
   }
-  const sourceSel = document.getElementById('sourceFilterSel');
-  if(sourceSel){ sourceSel.onchange = e => { state.sourceFilter = e.target.value; render(); }; }
   document.querySelectorAll('.folder-chip').forEach(el=>{
     el.onclick = () => { state.folderFilter = el.dataset.folder; render(); };
   });
   const newFolderBtn = document.getElementById('newFolderBtn');
-  if(newFolderBtn){
-    newFolderBtn.onclick = async () => {
-      const name = (prompt('Folder name:') || '').trim();
-      if(!name) return;
-      await ensureFolderExists(name);
+  if(newFolderBtn){ newFolderBtn.onclick = () => { state.addingFolder = true; render(); }; }
+
+  const cancelFolderBtn = document.getElementById('cancelFolderModal');
+  if(cancelFolderBtn){ cancelFolderBtn.onclick = () => { state.addingFolder = false; render(); }; }
+  const saveFolderBtn = document.getElementById('saveFolderModal');
+  if(saveFolderBtn){
+    saveFolderBtn.onclick = async () => {
+      const name = document.getElementById('folder_name').value.trim();
+      if(!name){ showToast('Enter a folder name'); return; }
+      const territory_id = isAdmin() ? document.getElementById('folder_territory').value : state.profile.territory_id;
+      const { data, error } = await sb.from('folders').insert([{ name, territory_id }]).select();
+      if(error){ showToast('Could not create: ' + error.message); return; }
+      state.folders.push(data[0]);
+      state.addingFolder = false;
       render();
       showToast('Folder created');
     };
@@ -771,11 +978,12 @@ function bindEvents(){
     assignFolderBtn.onclick = async () => {
       const sel = document.getElementById('folderAssignSel');
       let val = sel.value;
+      const cust = state.customers.find(c=>c.id===assignFolderBtn.dataset.cust);
       if(val === '__new__'){
         val = (prompt('New folder name:') || '').trim();
         if(!val) return;
       }
-      if(val) await ensureFolderExists(val);
+      if(val && cust) await ensureFolderExists(val, cust.territory_id);
       await updateCustomer(assignFolderBtn.dataset.cust, { folder: val || null });
     };
   }
@@ -798,6 +1006,9 @@ function bindEvents(){
     };
   });
 
+  const backToListBtn = document.getElementById('backToListBtn');
+  if(backToListBtn){ backToListBtn.onclick = () => { state.selectedId = null; render(); }; }
+
   document.querySelectorAll('[data-share-cust]').forEach(el=>{
     el.onclick = async (e) => {
       e.stopPropagation();
@@ -817,16 +1028,13 @@ function bindEvents(){
       const shareText = lines.join('\n');
       if(navigator.share){
         try{ await navigator.share({ title: c.company || 'Customer', text: shareText }); }
-        catch(err){ /* user cancelled the share sheet, do nothing */ }
+        catch(err){ /* cancelled */ }
       } else {
         try{ await navigator.clipboard.writeText(shareText); showToast('Copied — paste it into a text, email, etc.'); }
         catch(err){ showToast('Could not share automatically'); }
       }
     };
   });
-  const backToListBtn = document.getElementById('backToListBtn');
-  if(backToListBtn){ backToListBtn.onclick = () => { state.selectedId = null; render(); }; }
-
   document.querySelectorAll('[data-edit-cust]').forEach(el=>{
     el.onclick = (e) => { e.stopPropagation(); state.editingCustomer = true; render(); };
   });
@@ -850,12 +1058,6 @@ function bindEvents(){
   document.querySelectorAll('[data-copy-email]').forEach(el=>{
     el.onclick = async () => {
       try{ await navigator.clipboard.writeText(el.dataset.copyEmail); showToast('Email copied'); }
-      catch(e){ showToast('Could not copy automatically'); }
-    };
-  });
-  document.querySelectorAll('[data-copy-note]').forEach(el=>{
-    el.onclick = async () => {
-      try{ await navigator.clipboard.writeText(el.dataset.copyNote); showToast('Copied — paste into a text or email'); }
       catch(e){ showToast('Could not copy automatically'); }
     };
   });
@@ -885,7 +1087,6 @@ function bindEvents(){
       const follow_up_date = document.getElementById('noteFollowUp').value || null;
       const files = document.getElementById('notePhotos').files;
       if(!note_text){ showToast('Write a note first'); return; }
-      if(!state.currentUser){ showToast('Enter your name up top so we know who wrote this'); return; }
       saveNoteBtn.disabled = true; saveNoteBtn.textContent = 'Saving…';
       let photos = [];
       try{
@@ -906,24 +1107,48 @@ function bindEvents(){
     saveCustBtn.onclick = async () => {
       const data = {
         company: document.getElementById('f_company').value.trim(),
-        folder: document.getElementById('f_folder').value.trim() || null,
         street: document.getElementById('f_street').value.trim(),
         city: document.getElementById('f_city').value.trim(),
         province: document.getElementById('f_province').value.trim(),
         postal_code: document.getElementById('f_postal').value.trim(),
         size_of_existing_sign: document.getElementById('f_size').value.trim(),
-        source: document.getElementById('f_source').value.trim() || DEFAULT_SOURCE,
       };
       if(!data.company){ showToast('Company name is required'); return; }
-      if(data.folder) await ensureFolderExists(data.folder);
+      if(isAdmin()){
+        data.territory_id = document.getElementById('f_territory').value;
+      } else {
+        data.territory_id = state.profile.territory_id;
+      }
       const existingId = saveCustBtn.dataset.existing;
       if(existingId){ await updateCustomer(existingId, data); }
       else{ await addCustomer(data); }
     };
   }
+
+  const newTerritoryBtn = document.getElementById('newTerritoryBtn');
+  if(newTerritoryBtn){
+    newTerritoryBtn.onclick = async () => {
+      const name = (prompt('Territory name:') || '').trim();
+      if(!name) return;
+      const { data, error } = await sb.from('territories').insert([{ name }]).select();
+      if(error){ showToast('Could not create: ' + error.message); return; }
+      state.territories.push(data[0]);
+      render();
+      showToast('Territory created');
+    };
+  }
+  document.querySelectorAll('[data-save-profile]').forEach(el=>{
+    el.onclick = () => {
+      const id = el.dataset.saveProfile;
+      const role = document.querySelector(`[data-role-sel="${id}"]`).value;
+      const territoryRaw = document.querySelector(`[data-territory-sel="${id}"]`).value;
+      saveProfile(id, { role, territory_id: territoryRaw || null });
+    };
+  });
 }
 
-loadAll();
+boot();
 </script>
+
 </body>
 </html>
