@@ -464,7 +464,7 @@ async function deleteCustomer(id){
   showToast('Customer deleted');
 }
 async function addNote(custId, data){
-  const payload = { customer_id: custId, created_by: state.profile.email, ...data };
+  const payload = { customer_id: custId, created_by: state.profile.display_name || state.profile.email, ...data };
   const { data: rows, error } = await sb.from('notes').insert([payload]).select();
   if(error){ showToast('Save failed: ' + error.message); return; }
   state.notes.push(rows[0]);
@@ -623,6 +623,7 @@ function bindPendingEvents(){
 
 function headerHtml(){
   const terrName = isAdmin() ? 'Admin — all territories' : territoryNameFor(state.profile.territory_id);
+  const displayName = state.profile.display_name || state.profile.email;
   return `
   <header>
     <div class="brand">
@@ -633,7 +634,8 @@ function headerHtml(){
       </div>
     </div>
     <div class="who">
-      <span>${esc(state.profile.email)} · ${esc(terrName)}</span>
+      <span>${esc(displayName)} · ${esc(terrName)}</span>
+      <button class="btn ghost small" id="editNameBtn">Edit Name</button>
       <button class="btn ghost small" id="signOutBtn">Sign Out</button>
     </div>
   </header>`;
@@ -641,6 +643,20 @@ function headerHtml(){
 function bindHeaderEvents(){
   const btn = document.getElementById('signOutBtn');
   if(btn){ btn.onclick = doSignOut; }
+  const editBtn = document.getElementById('editNameBtn');
+  if(editBtn){
+    editBtn.onclick = async () => {
+      const current = state.profile.display_name || '';
+      const name = prompt('Your display name (shown instead of your email):', current);
+      if(name === null) return;
+      const trimmed = name.trim();
+      const { error } = await sb.rpc('update_my_display_name', { new_name: trimmed || null });
+      if(error){ showToast('Could not save: ' + error.message); return; }
+      state.profile.display_name = trimmed || null;
+      render();
+      showToast('Name updated');
+    };
+  }
 }
 
 function navHtml(){
@@ -671,10 +687,11 @@ function teamViewHtml(){
       state.profilesList.map(p => `
         <div class="followup-row">
           <div>
-            <div class="co">${esc(p.email)}</div>
-            <div class="snippet">${p.role==='admin' ? 'Admin' : territoryNameFor(p.territory_id)}</div>
+            <div class="co">${esc(p.display_name || p.email)}</div>
+            <div class="snippet">${esc(p.email)} · ${p.role==='admin' ? 'Admin' : territoryNameFor(p.territory_id)}</div>
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input data-name-input="${p.id}" placeholder="Display name" value="${esc(p.display_name)}" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px; width:120px;">
             <select data-role-sel="${p.id}">
               <option value="user" ${p.role==='user'?'selected':''}>User</option>
               <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
@@ -1142,7 +1159,8 @@ function bindEvents(){
       const id = el.dataset.saveProfile;
       const role = document.querySelector(`[data-role-sel="${id}"]`).value;
       const territoryRaw = document.querySelector(`[data-territory-sel="${id}"]`).value;
-      saveProfile(id, { role, territory_id: territoryRaw || null });
+      const display_name = document.querySelector(`[data-name-input="${id}"]`).value.trim() || null;
+      saveProfile(id, { role, territory_id: territoryRaw || null, display_name });
     };
   });
 }
