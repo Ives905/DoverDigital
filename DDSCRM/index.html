@@ -681,9 +681,7 @@ function navHtml(){
   <nav>
     <button data-view="customers" class="${state.view==='customers'?'active':''}">Customers</button>
     <button data-view="folders" class="${state.view==='folders'?'active':''}">Folders</button>
-    <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups${
-      (()=>{ const n = allFollowUps().filter(x=>daysUntil(x.note.follow_up_date)<=0).length; return n>0 ? ` (${n})` : ''; })()
-    }</button>
+    <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups</button>
     ${isAdmin() ? `<button data-view="team" class="${state.view==='team'?'active':''}">Team</button>` : ''}
   </nav>`;
 }
@@ -935,14 +933,8 @@ function followupsViewHtml(){
       ${items.length===0 ? `<div class="empty">No follow-ups scheduled.</div>` :
         items.map(({note,cust}) => `
         <div class="followup-row">
-          <div>
-            <div class="co">${esc(cust.company||'(no company name)')}</div>
-            <div class="snippet">${esc(note.note_text.slice(0,140))}${note.note_text.length>140?'…':''}</div>
-          </div>
-          <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
-            ${followUpBadge(note.follow_up_date)}
-            <button class="btn ghost small" data-goto-cust="${cust.id}">Open</button>
-          </div>
+          <div class="co" data-goto-cust="${cust.id}" style="cursor:pointer;">${esc(cust.company||'(no company name)')}</div>
+          <div style="flex-shrink:0;">${followUpBadge(note.follow_up_date)}</div>
         </div>`).join('')}
     </div>
   </main>`;
