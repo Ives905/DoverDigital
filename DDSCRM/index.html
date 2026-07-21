@@ -265,18 +265,33 @@ function isAdmin(){ return state.profile && state.profile.role === 'admin'; }
 // ---------- auth / bootstrap ----------
 async function boot(){
   if(!configured){ state.bootLoading = false; render(); return; }
+
+  const url = new URL(window.location.href);
+  const hashParams = new URLSearchParams(url.hash.startsWith('#') ? url.hash.substring(1) : '');
+  const isRecoveryUrl = url.searchParams.get('type') === 'recovery' || hashParams.get('type') === 'recovery';
+
   const { data } = await sb.auth.getSession();
   state.session = data.session;
-  if(state.session){ await afterLogin(); }
-  else { state.bootLoading = false; render(); }
+
+  if(isRecoveryUrl && state.session){
+    state.passwordRecovery = true;
+    state.bootLoading = false;
+    render();
+  } else if(state.session){
+    await afterLogin();
+  } else {
+    state.bootLoading = false; render();
+  }
 
   sb.auth.onAuthStateChange((event, session) => {
     if(event === 'PASSWORD_RECOVERY'){
       state.passwordRecovery = true;
       state.session = session;
+      state.bootLoading = false;
       render();
       return;
     }
+    if(state.passwordRecovery) return;
     const hadSession = !!state.session;
     state.session = session;
     if(session && !hadSession){ afterLogin(); }
