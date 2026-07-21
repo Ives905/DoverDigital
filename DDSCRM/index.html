@@ -230,6 +230,7 @@ const state = {
   authError: null,
   authBusy: false,
   bootLoading: true,
+  passwordRecovery: false,
 
   customers: [],
   notes: [],
@@ -270,6 +271,12 @@ async function boot(){
   else { state.bootLoading = false; render(); }
 
   sb.auth.onAuthStateChange((event, session) => {
+    if(event === 'PASSWORD_RECOVERY'){
+      state.passwordRecovery = true;
+      state.session = session;
+      render();
+      return;
+    }
     const hadSession = !!state.session;
     state.session = session;
     if(session && !hadSession){ afterLogin(); }
@@ -314,6 +321,25 @@ async function doLogin(email, password){
 }
 async function doSignOut(){
   await sb.auth.signOut();
+}
+async function doForgotPassword(email){
+  state.authBusy = true; state.authError = null; render();
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+  state.authBusy = false;
+  if(error){ state.authError = error.message; render(); return; }
+  state.authMode = 'login';
+  render();
+  showToast('Check your email for a password reset link.');
+}
+async function doSetNewPassword(newPassword){
+  state.authBusy = true; state.authError = null; render();
+  const { error } = await sb.auth.updateUser({ password: newPassword });
+  state.authBusy = false;
+  if(error){ state.authError = error.message; render(); return; }
+  state.passwordRecovery = false;
+  showToast('Password updated.');
+  await afterLogin();
 }
 
 // ---------- derived helpers ----------
@@ -536,6 +562,11 @@ function render(){
     root.innerHTML = brandHeaderHtml() + '<div class="loading">Loading…</div>' + toastHtml();
     return;
   }
+  if(state.passwordRecovery){
+    root.innerHTML = resetPasswordScreenHtml() + toastHtml();
+    bindResetPasswordEvents();
+    return;
+  }
   if(!state.session){
     root.innerHTML = authScreenHtml() + toastHtml();
     bindAuthEvents();
@@ -583,6 +614,23 @@ function brandHeaderHtml(){
 }
 
 function authScreenHtml(){
+  if(state.authMode === 'forgot'){
+    return `
+    ${brandHeaderHtml()}
+    <main style="max-width:420px; margin:60px auto;">
+      <div class="card" style="padding:24px;">
+        <h2 style="margin-top:0;">Reset Password</h2>
+        ${state.authError ? `<div class="errbox">${esc(state.authError)}</div>` : ''}
+        <div class="field" style="margin-bottom:14px;"><label>Email</label><input type="email" id="forgotEmail"></div>
+        <button class="btn amber" id="forgotSubmitBtn" style="width:100%;" ${state.authBusy?'disabled':''}>
+          ${state.authBusy ? 'Please wait…' : 'Send Reset Link'}
+        </button>
+        <div style="text-align:center; margin-top:14px; font-size:13px; color:var(--muted);">
+          <a href="#" id="backToLoginFromForgot">Back to log in</a>
+        </div>
+      </div>
+    </main>`;
+  }
   return `
   ${brandHeaderHtml()}
   <main style="max-width:420px; margin:60px auto;">
@@ -596,7 +644,7 @@ function authScreenHtml(){
       </button>
       <div style="text-align:center; margin-top:14px; font-size:13px; color:var(--muted);">
         ${state.authMode==='login'
-          ? `New here? <a href="#" id="toSignup">Create an account</a>`
+          ? `New here? <a href="#" id="toSignup">Create an account</a> · <a href="#" id="forgotPasswordLink">Forgot password?</a>`
           : `Already have an account? <a href="#" id="toLogin">Log in</a>`}
       </div>
       ${state.authMode==='signup' ? `<div style="margin-top:10px; font-size:12px; color:var(--muted);">After signing up, an admin needs to assign you to a territory before you can see any customers.</div>` : ''}
@@ -618,6 +666,43 @@ function bindAuthEvents(){
   if(toSignup){ toSignup.onclick = (e) => { e.preventDefault(); state.authMode='signup'; state.authError=null; render(); }; }
   const toLogin = document.getElementById('toLogin');
   if(toLogin){ toLogin.onclick = (e) => { e.preventDefault(); state.authMode='login'; state.authError=null; render(); }; }
+  const forgotLink = document.getElementById('forgotPasswordLink');
+  if(forgotLink){ forgotLink.onclick = (e) => { e.preventDefault(); state.authMode='forgot'; state.authError=null; render(); }; }
+  const backToLogin = document.getElementById('backToLoginFromForgot');
+  if(backToLogin){ backToLogin.onclick = (e) => { e.preventDefault(); state.authMode='login'; state.authError=null; render(); }; }
+  const forgotSubmitBtn = document.getElementById('forgotSubmitBtn');
+  if(forgotSubmitBtn){
+    forgotSubmitBtn.onclick = () => {
+      const email = document.getElementById('forgotEmail').value.trim();
+      if(!email){ state.authError = 'Enter your email.'; render(); return; }
+      doForgotPassword(email);
+    };
+  }
+}
+
+function resetPasswordScreenHtml(){
+  return `
+  ${brandHeaderHtml()}
+  <main style="max-width:420px; margin:60px auto;">
+    <div class="card" style="padding:24px;">
+      <h2 style="margin-top:0;">Set a New Password</h2>
+      ${state.authError ? `<div class="errbox">${esc(state.authError)}</div>` : ''}
+      <div class="field" style="margin-bottom:14px;"><label>New Password</label><input type="password" id="newPasswordInput"></div>
+      <button class="btn amber" id="setNewPasswordBtn" style="width:100%;" ${state.authBusy?'disabled':''}>
+        ${state.authBusy ? 'Please wait…' : 'Set Password'}
+      </button>
+    </div>
+  </main>`;
+}
+function bindResetPasswordEvents(){
+  const btn = document.getElementById('setNewPasswordBtn');
+  if(btn){
+    btn.onclick = () => {
+      const pw = document.getElementById('newPasswordInput').value;
+      if(!pw || pw.length < 6){ state.authError = 'Password must be at least 6 characters.'; render(); return; }
+      doSetNewPassword(pw);
+    };
+  }
 }
 
 function pendingAssignmentHtml(){
