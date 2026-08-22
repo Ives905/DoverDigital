@@ -389,6 +389,37 @@ async function deleteFolder(name){
 function contactsFor(custId){
   return state.contacts.filter(ct => ct.customer_id === custId);
 }
+function csvEscape(val){
+  if(val === null || val === undefined) return '';
+  const s = String(val);
+  if(/[",\n]/.test(s)){
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+function exportCustomersToCSV(list, filename){
+  const headers = ['Company','Street','City','Province','Postal Code','Folder','Territory','Size of Existing Sign','Contacts'];
+  const rows = list.map(c => {
+    const contacts = contactsFor(c.id).map(ct => {
+      const parts = [ct.name, ct.phone, ct.email].filter(Boolean);
+      return parts.join(' / ');
+    }).join('; ');
+    return [
+      c.company, c.street, c.city, c.province, c.postal_code,
+      c.folder || '', territoryNameFor(c.territory_id), c.size_of_existing_sign || '', contacts
+    ];
+  });
+  const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 function filteredCustomers(){
   let list = state.customers;
   if(state.folderFilter !== 'ALL'){
@@ -839,7 +870,10 @@ function foldersViewHtml(){
               <div class="name">${esc(f)}</div>
               <div class="addr">${state.customers.filter(c=>c.folder===f).length} customer(s)</div>
             </div>
-            <button class="btn ghost small" data-del-folder="${esc(f)}" style="padding:2px 8px;">✕</button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn ghost small" data-export-folder="${esc(f)}" style="padding:2px 8px;">Export</button>
+              <button class="btn ghost small" data-del-folder="${esc(f)}" style="padding:2px 8px;">✕</button>
+            </div>
           </div>`).join('')}
         ${noFolderCount>0 ? `
           <div class="cust-item" data-folder="">
@@ -861,6 +895,7 @@ function customersViewHtml(){
         <input id="searchInput" type="text" placeholder="Search company, address, contact, or note text…" value="${esc(state.search)}" style="width:100%; padding-right:${state.search?'32px':'10px'};">
         ${state.search ? `<button id="clearSearchBtn" type="button" aria-label="Clear search" style="position:absolute; right:4px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); cursor:pointer; font-size:18px; line-height:1; padding:4px 8px;">✕</button>` : ''}
       </div>
+      <button class="btn ghost" id="exportCurrentBtn">Export CSV</button>
       <button class="btn amber" id="newCustomerBtn">+ New Customer</button>
     </div>
     ${state.folderFilter!=='ALL' ? `<div class="folder-chips"><span class="folder-chip active" data-folder="ALL">Folder: ${esc(state.folderFilter||'No Folder')} — tap to clear</span></div>` : ''}
@@ -1162,12 +1197,27 @@ function bindEvents(){
 
   const newBtn = document.getElementById('newCustomerBtn');
   if(newBtn){ newBtn.onclick = () => { state.addingCustomer = true; render(); }; }
+  const exportCurrentBtn = document.getElementById('exportCurrentBtn');
+  if(exportCurrentBtn){
+    exportCurrentBtn.onclick = () => {
+      const label = state.folderFilter !== 'ALL' ? (state.folderFilter || 'No Folder') : 'All Customers';
+      exportCustomersToCSV(filteredCustomers(), `${label}.csv`);
+    };
+  }
 
   document.querySelectorAll('.cust-item[data-id]').forEach(el=>{
     el.onclick = () => { state.selectedId = el.dataset.id; render(); };
   });
   document.querySelectorAll('.cust-item[data-folder]').forEach(el=>{
     el.onclick = () => { state.folderFilter = el.dataset.folder; state.view = 'customers'; state.selectedId = null; render(); };
+  });
+  document.querySelectorAll('[data-export-folder]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      const folderName = el.dataset.exportFolder;
+      const list = state.customers.filter(c => c.folder === folderName);
+      exportCustomersToCSV(list, `${folderName}.csv`);
+    };
   });
   document.querySelectorAll('[data-del-folder]').forEach(el=>{
     el.onclick = (e) => {
