@@ -398,15 +398,19 @@ function csvEscape(val){
   return s;
 }
 function exportCustomersToCSV(list, filename){
-  const headers = ['Company','Street','City','Province','Postal Code','Folder','Territory','Size of Existing Sign','Contacts'];
+  const headers = ['Company','Street','City','Province','Postal Code','Folder','Territory','Size of Existing Sign','Contacts','Notes'];
   const rows = list.map(c => {
     const contacts = contactsFor(c.id).map(ct => {
       const parts = [ct.name, ct.phone, ct.email].filter(Boolean);
       return parts.join(' / ');
     }).join('; ');
+    const notesText = notesFor(c.id).map(n => {
+      const followUp = n.follow_up_date ? ` [Follow up: ${fmtDate(n.follow_up_date)}]` : '';
+      return `${fmtDate(n.date_of_note)} (${n.created_by || 'Unknown'}): ${n.note_text}${followUp}`;
+    }).join('\n');
     return [
       c.company, c.street, c.city, c.province, c.postal_code,
-      c.folder || '', territoryNameFor(c.territory_id), c.size_of_existing_sign || '', contacts
+      c.folder || '', territoryNameFor(c.territory_id), c.size_of_existing_sign || '', contacts, notesText
     ];
   });
   const csvContent = '\uFEFF' + [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
