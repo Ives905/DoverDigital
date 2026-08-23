@@ -597,6 +597,18 @@ async function saveProfile(id, data){
   render();
   showToast('Team member updated');
 }
+async function setPipelineStatus(custId, status, autoNoteText){
+  const payload = { pipeline_status: status, pipeline_status_at: status ? new Date().toISOString() : null };
+  const { error } = await sb.from('customers').update(payload).eq('id', custId);
+  if(error){ showToast('Update failed: ' + error.message); return; }
+  const c = state.customers.find(c=>c.id===custId);
+  if(c) Object.assign(c, payload);
+  if(autoNoteText){
+    await addNote(custId, { note_text: autoNoteText, date_of_note: todayStr(), follow_up_date: null, photos: [] });
+  }
+  render();
+  showToast('Updated');
+}
 
 // ---------- render ----------
 function render(){
@@ -645,6 +657,8 @@ function render(){
     body = foldersViewHtml();
   } else if(state.view === 'team'){
     body = teamViewHtml();
+  } else if(state.view === 'letterplan'){
+    body = letterPlanViewHtml();
   } else {
     body = followupsViewHtml();
   }
@@ -817,8 +831,46 @@ function navHtml(){
     <button data-view="customers" class="${state.view==='customers'?'active':''}">Customers</button>
     <button data-view="folders" class="${state.view==='folders'?'active':''}">Folders</button>
     <button data-view="followups" class="${state.view==='followups'?'active':''}">Follow-Ups</button>
+    <button data-view="letterplan" class="${state.view==='letterplan'?'active':''}">Letter Plan</button>
     ${isAdmin() ? `<button data-view="team" class="${state.view==='team'?'active':''}">Team</button>` : ''}
   </nav>`;
+}
+
+function letterPlanViewHtml(){
+  const letterQueue = state.customers.filter(c => c.pipeline_status === 'letter_queue')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||''));
+  const reminderList = state.customers.filter(c => c.pipeline_status === 'reminder_list')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||''));
+  return `
+  <main>
+    <div class="section-title">Letter List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— customers ready for Deb's form letter</span></div>
+    <div class="card" style="margin-bottom:24px;">
+      ${letterQueue.length===0 ? `<div class="empty">Nobody in the letter queue right now.</div>` :
+        letterQueue.map(c => `
+        <div class="followup-row">
+          <div class="co" data-goto-cust="${c.id}" style="cursor:pointer;">${esc(c.company||'(no company name)')}</div>
+          <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            <button class="btn small" data-mark-letter-sent="${c.id}">Mark Letter Sent</button>
+            <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove</button>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="section-title">Reminder List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— gets a check-in email 3x a year</span></div>
+    <div class="toolbar" style="padding:0 0 12px;">
+      <button class="btn ghost" id="exportReminderListBtn">Export Emails (CSV)</button>
+    </div>
+    <div class="card">
+      ${reminderList.length===0 ? `<div class="empty">Nobody on the reminder list yet.</div>` :
+        reminderList.map(c => `
+        <div class="followup-row">
+          <div class="co" data-goto-cust="${c.id}" style="cursor:pointer;">${esc(c.company||'(no company name)')}
+            <span style="font-weight:400; color:var(--muted); font-size:12px;"> · since ${c.pipeline_status_at ? fmtDate(c.pipeline_status_at.slice(0,10)) : '—'}</span>
+          </div>
+          <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove</button>
+        </div>`).join('')}
+    </div>
+  </main>`;
 }
 
 function teamViewHtml(){
@@ -959,6 +1011,19 @@ function customerDetailHtml(c){
         <option value="__new__">+ New folder…</option>
       </select>
       <button class="btn small" id="assignFolderBtn" data-cust="${c.id}">Add to Folder</button>
+    </div>
+
+    <div class="row-actions" style="align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+      ${c.pipeline_status === 'letter_queue' ? `
+        <span class="tag" style="background:#fff7e6; color:#8a5a00;">In Letter List</span>
+        <button class="btn small" data-mark-letter-sent="${c.id}">Mark Letter Sent</button>
+        <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove from List</button>
+      ` : c.pipeline_status === 'reminder_list' ? `
+        <span class="tag" style="background:#eaf3ee; color:var(--good);">On Reminder List${c.pipeline_status_at ? ' since ' + fmtDate(c.pipeline_status_at.slice(0,10)) : ''}</span>
+        <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove from List</button>
+      ` : `
+        <button class="btn small" data-send-letter-list="${c.id}">Send to Letter List</button>
+      `}
     </div>
 
     <div class="section-title">Contacts</div>
@@ -1272,6 +1337,34 @@ function bindEvents(){
       }
     };
   });
+  document.querySelectorAll('[data-send-letter-list]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      setPipelineStatus(el.dataset.sendLetterList, 'letter_queue', 'Sent to the Letter List after repeated call attempts with no answer.');
+    };
+  });
+  document.querySelectorAll('[data-mark-letter-sent]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      setPipelineStatus(el.dataset.markLetterSent, 'reminder_list', 'Form letter sent — added to the 3x/year reminder email list.');
+    };
+  });
+  document.querySelectorAll('[data-clear-pipeline]').forEach(el=>{
+    el.onclick = (e) => {
+      e.stopPropagation();
+      if(confirm('Remove this customer from the letter/reminder pipeline?')){
+        setPipelineStatus(el.dataset.clearPipeline, null, null);
+      }
+    };
+  });
+  const exportReminderListBtn = document.getElementById('exportReminderListBtn');
+  if(exportReminderListBtn){
+    exportReminderListBtn.onclick = () => {
+      const list = state.customers.filter(c => c.pipeline_status === 'reminder_list');
+      exportCustomersToCSV(list, 'Reminder List.csv');
+    };
+  }
+
   document.querySelectorAll('[data-goto-cust]').forEach(el=>{
     el.onclick = () => { state.view='customers'; state.selectedId = el.dataset.gotoCust; render(); };
   });
