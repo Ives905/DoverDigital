@@ -612,6 +612,13 @@ async function setPipelineStatus(custId, status, autoNoteText){
 
 // ---------- render ----------
 function render(){
+  const existingList = document.querySelector('.list');
+  const savedScroll = existingList ? existingList.scrollTop : 0;
+  renderInner();
+  const newList = document.querySelector('.list');
+  if(newList) newList.scrollTop = savedScroll;
+}
+function renderInner(){
   const root = document.getElementById('root');
   if(!configured){
     const msg = libraryFailedToLoad
