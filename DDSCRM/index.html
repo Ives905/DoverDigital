@@ -851,6 +851,9 @@ function letterPlanViewHtml(){
   return `
   <main>
     <div class="section-title">Letter List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— customers ready for Deb's form letter</span></div>
+    <div class="toolbar" style="padding:0 0 12px;">
+      <button class="btn ghost" id="exportLetterListBtn">Export CSV</button>
+    </div>
     <div class="card" style="margin-bottom:24px;">
       ${letterQueue.length===0 ? `<div class="empty">Nobody in the letter queue right now.</div>` :
         letterQueue.map(c => `
@@ -1369,6 +1372,13 @@ function bindEvents(){
     exportReminderListBtn.onclick = () => {
       const list = state.customers.filter(c => c.pipeline_status === 'reminder_list');
       exportCustomersToCSV(list, 'Reminder List.csv');
+    };
+  }
+  const exportLetterListBtn = document.getElementById('exportLetterListBtn');
+  if(exportLetterListBtn){
+    exportLetterListBtn.onclick = () => {
+      const list = state.customers.filter(c => c.pipeline_status === 'letter_queue');
+      exportCustomersToCSV(list, 'Letter List.csv');
     };
   }
 
