@@ -989,6 +989,11 @@ function customerDetailHtml(c){
   const notes = notesFor(c.id);
   const estimates = estimatesFor(c.id);
   const contacts = contactsFor(c.id);
+  const photoEntries = [
+    ...notes.map(n => ({ date: n.date_of_note, photos: n.photos })),
+    ...estimates.map(e => ({ date: e.date_of_estimate, photos: e.photos })),
+  ].filter(x => x.photos && x.photos.length).sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  const latestPhoto = photoEntries.length ? photoEntries[0].photos[0] : null;
   return `
   <div class="detail">
     <button class="btn ghost small back-to-list" id="backToListBtn">← Back to list</button>
@@ -1013,6 +1018,10 @@ function customerDetailHtml(c){
       </div>
       <div><strong>Existing sign size:</strong> ${esc(c.size_of_existing_sign)||'—'}</div>
     </div>
+    ${latestPhoto ? `
+    <div style="margin:0 0 16px;">
+      <img src="${latestPhoto}" data-lightbox="${latestPhoto}" style="width:100%; max-width:460px; max-height:340px; object-fit:cover; border-radius:10px; border:1px solid var(--line); cursor:pointer; display:block;">
+    </div>` : ''}
     <div class="row-actions" style="align-items:center; margin-bottom:14px;">
       <label style="font-size:12px; color:var(--muted); font-weight:600;">Folder:</label>
       <select id="folderAssignSel" style="padding:6px 8px; border:1px solid var(--line); border-radius:6px; font-size:12.5px;">
