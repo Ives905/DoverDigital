@@ -494,16 +494,29 @@ async function uploadPhoto(custId, blob){
 }
 
 // ---------- data actions ----------
+async function fetchAll(table){
+  const pageSize = 1000;
+  let from = 0;
+  let all = [];
+  while(true){
+    const { data, error } = await sb.from(table).select('*').range(from, from + pageSize - 1);
+    if(error) return { data: null, error };
+    all = all.concat(data || []);
+    if(!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return { data: all, error: null };
+}
 async function loadAll(){
   state.loading = true; state.error = null; render();
   const calls = [
-    sb.from('customers').select('*'),
-    sb.from('notes').select('*'),
-    sb.from('contacts').select('*'),
-    sb.from('folders').select('*'),
-    sb.from('estimates').select('*'),
+    fetchAll('customers'),
+    fetchAll('notes'),
+    fetchAll('contacts'),
+    fetchAll('folders'),
+    fetchAll('estimates'),
   ];
-  if(isAdmin()) calls.push(sb.from('profiles').select('*'));
+  if(isAdmin()) calls.push(fetchAll('profiles'));
 
   const results = await Promise.all(calls);
   const errs = results.map(r=>r.error).filter(Boolean);
