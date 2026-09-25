@@ -401,7 +401,8 @@ function exportCustomersToCSV(list, filename){
   const headers = ['Company','Street','City','Province','Postal Code','Folder','Territory','Size of Existing Sign','Contacts','Notes'];
   const rows = list.map(c => {
     const contacts = contactsFor(c.id).map(ct => {
-      const parts = [ct.name, ct.phone, ct.email].filter(Boolean);
+      const namePart = [ct.name, ct.title].filter(Boolean).join(', ');
+      const parts = [namePart, ct.phone, ct.email].filter(Boolean);
       return parts.join(' / ');
     }).join('; ');
     const notesText = notesFor(c.id).map(n => {
@@ -1063,7 +1064,7 @@ function customerDetailHtml(c){
       contacts.map(ct => `
         <div class="contact-card">
           <div>
-            <div class="cname">${esc(ct.name)||'(no name)'}</div>
+            <div class="cname">${esc(ct.name)||'(no name)'}${ct.title ? ` <span style="font-weight:400; color:var(--muted);">— ${esc(ct.title)}</span>` : ''}</div>
             <div class="clinks">
               ${ct.phone ? `<a href="tel:${telHref(ct.phone)}">Call ${esc(ct.phone)}</a>` : ''}
               ${ct.phone ? `<a href="sms:${telHref(ct.phone)}">Text</a>` : ''}
@@ -1074,6 +1075,7 @@ function customerDetailHtml(c){
         </div>`).join('')}
     <div class="add-contact">
       <div class="field" style="flex:1; min-width:120px;"><label>Name</label><input id="c_name" placeholder="Name"></div>
+      <div class="field" style="flex:1; min-width:120px;"><label>Title</label><input id="c_title" placeholder="e.g. Director of Sales"></div>
       <div class="field" style="flex:1; min-width:120px;"><label>Phone</label><input id="c_phone" placeholder="Phone" class="mono"></div>
       <div class="field" style="flex:1; min-width:140px;"><label>Email</label><input id="c_email" placeholder="Email"></div>
       <button class="btn small" id="addContactBtn" data-cust="${c.id}">+ Add Contact</button>
@@ -1432,10 +1434,11 @@ function bindEvents(){
   if(addContactBtn){
     addContactBtn.onclick = async () => {
       const name = document.getElementById('c_name').value.trim();
+      const title = document.getElementById('c_title').value.trim();
       const phone = document.getElementById('c_phone').value.trim();
       const email = document.getElementById('c_email').value.trim();
       if(!name && !phone && !email){ showToast('Add at least a name, phone, or email'); return; }
-      await addContact(addContactBtn.dataset.cust, { name, phone, email });
+      await addContact(addContactBtn.dataset.cust, { name, title, phone, email });
     };
   }
 
