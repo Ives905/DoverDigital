@@ -1175,7 +1175,7 @@
 
     /* ─── RESPONSIVE ─── */
     @media (max-width: 900px) {
-      .why-grid, .financing-grid, .testimonials-grid { grid-template-columns: 1fr; }
+      .why-grid, .financing-grid, .testimonials-grid, .servicing-grid { grid-template-columns: 1fr; }
       .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 48px; }
       .products-grid { grid-template-columns: 1fr; }
       .faq-grid { grid-template-columns: 1fr; }
@@ -1230,6 +1230,47 @@
       line-height: 1;
       padding: 8px;
     }
+
+    /* ── BOARD SERVICING SECTION ── */
+    #servicing { padding: 120px 0; background: var(--dark-2); }
+    .servicing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      margin-top: 56px;
+    }
+    .servicing-card {
+      background: var(--dark-3);
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .servicing-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--amber);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .servicing-card:hover::before { transform: scaleX(1); }
+    .servicing-card:hover { background: var(--dark-4); }
+    .servicing-icon { font-size: 36px; margin-bottom: 24px; display: block; }
+    .servicing-card h3 { font-size: 22px; margin-bottom: 14px; color: var(--text-light); }
+    .servicing-card p { color: var(--text-light-muted); font-size: 16px; line-height: 1.7; }
+    #servicing h2 { color: var(--dark-3); }
+    .servicing-note {
+      margin-top: 56px;
+      text-align: center;
+      color: var(--dark-3);
+      font-size: 15px;
+    }
+    .servicing-note strong { color: var(--amber); }
+    .servicing-cta { margin-top: 40px; text-align: center; }
+
   </style>
 </head>
 <body>
@@ -1254,10 +1295,9 @@
       <span class="nav-logo-sub">Ontario's Digital Sign Experts</span>
     </a>
     <ul class="nav-links">
-      <li><a href="#why">Why Digital</a></li>
-      <li><a href="#products">Products</a></li>
-
-
+      <li><a href="#products">What We Offer</a></li>
+      <li><a href="#servicing">Board Servicing</a></li>
+      <li><a href="#why">Why Upgrade</a></li>
       <li><a href="#faq">FAQ</a></li>
       <li><a href="#contact" class="btn btn-primary nav-cta">Free Quote</a></li>
     </ul>
@@ -1270,10 +1310,9 @@
 <!-- MOBILE NAV -->
 <div class="mobile-nav" id="mobile-nav">
   <span class="mobile-nav-close" id="mobile-nav-close">✕</span>
-  <a href="#why">Why Digital</a>
-  <a href="#products">Products</a>
-
-
+  <a href="#products">What We Offer</a>
+  <a href="#servicing">Board Servicing</a>
+  <a href="#why">Why Upgrade</a>
   <a href="#faq">FAQ</a>
   <a href="#contact" class="btn btn-primary">Get Free Quote</a>
 </div>
@@ -1354,54 +1393,6 @@
   </div>
 </div>
 
-<!-- WHY DIGITAL -->
-<section id="why">
-  <div class="container">
-    <div class="why-header reveal">
-      <span class="section-label">Why Upgrade</span>
-      <h2>Digital Signs Outperform<br>Traditional Signage</h2>
-    </div>
-    <div class="why-grid">
-      <div class="why-card reveal">
-        <span class="why-num">01</span>
-        <span class="why-icon">💡</span>
-        <h3>Eye-Catching Brightness</h3>
-        <p>Full-colour LED displays are dramatically brighter than painted signs, catching the eye of passing customers day or night — even in direct sunlight.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1">
-        <span class="why-num">02</span>
-        <span class="why-icon">🖥️</span>
-        <h3>Update Anytime, From Anywhere</h3>
-        <p>Change your message, prices, or promotions instantly from any laptop or tablet — no ladders, no printer, no weather delays. Your sign, your schedule.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-2">
-        <span class="why-num">03</span>
-        <span class="why-icon">📈</span>
-        <h3>Proven to Boost Revenue</h3>
-        <p>Studies show digital signs can increase revenue by up to 33%. A dynamic, professional display tells customers your business is modern, credible, and worth their time.</p>
-      </div>
-      <div class="why-card reveal">
-        <span class="why-num">04</span>
-        <span class="why-icon">🔋</span>
-        <h3>Energy Efficient</h3>
-        <p>LED technology uses a fraction of the power of older neon or fluorescent signs. Lower operating costs mean your sign pays for itself even faster.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-1">
-        <span class="why-num">05</span>
-        <span class="why-icon">🛡️</span>
-        <h3>Built to Last Ontario Winters</h3>
-        <p>Our signs are weatherproofed and built for Canadian climates — rain, snow, and -30°C. You get full warranty coverage and local support when you need it.</p>
-      </div>
-      <div class="why-card reveal reveal-delay-2">
-        <span class="why-num">06</span>
-        <span class="why-icon">🏆</span>
-        <h3>Outshine Your Competition</h3>
-        <p>If your competitor has a static sign, you automatically stand out. If they already have digital, you need one too — let us make sure yours is better.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- PRODUCTS -->
 <section id="products">
   <div class="container">
@@ -1458,6 +1449,98 @@
 </section>
 
 
+
+<!-- BOARD SERVICING -->
+<section id="servicing">
+  <div class="container">
+    <div class="reveal">
+      <span class="section-label">Board Servicing</span>
+      <h2>We Keep Your Digital Sign Running</h2>
+      <p style="max-width:640px; color:var(--dark-3); font-size:17px; line-height:1.7; margin-top:16px;">
+        Digital signs are an investment. When something goes wrong, we come to you — on-site, no shipping your board anywhere. We service most makes and models, and if a board can't be saved, we'll give you an honest answer and a clear path forward.
+      </p>
+    </div>
+
+    <div class="servicing-grid">
+      <div class="servicing-card reveal">
+        <span class="servicing-icon">🔧</span>
+        <h3>Repairs</h3>
+        <p>Hardware failures, dead modules, power supply issues, cabinet damage — we diagnose the problem on-site and fix what can be fixed. No guesswork, no upselling.</p>
+      </div>
+      <div class="servicing-card reveal">
+        <span class="servicing-icon">💻</span>
+        <h3>Programming &amp; Software</h3>
+        <p>Controller issues, firmware updates, network connectivity, content not displaying right — we handle the technical side so you don't have to figure it out yourself.</p>
+      </div>
+      <div class="servicing-card reveal">
+        <span class="servicing-icon">🛡️</span>
+        <h3>Preventive Maintenance</h3>
+        <p>Regular inspections, cleaning, and tune-ups extend the life of your board significantly. Catch small problems before they become expensive ones.</p>
+      </div>
+      <div class="servicing-card reveal">
+        <span class="servicing-icon">🔄</span>
+        <h3>Assessment &amp; Replacement</h3>
+        <p>If a board is beyond repair, we tell you straight. We can replace it with a new unit or refurbish your existing cabinet — whatever makes the most sense for your situation and budget.</p>
+      </div>
+    </div>
+
+    <div class="servicing-note reveal">
+      <p><strong>On-site service only</strong> — we come to your location. We work on most brands and models of digital display boards across Southern Ontario.</p>
+    </div>
+
+    <div class="servicing-cta reveal">
+      <a href="#contact" class="btn btn-primary">Book a Service Call</a>
+    </div>
+  </div>
+</section>
+
+<!-- WHY DIGITAL -->
+<section id="why">
+  <div class="container">
+    <div class="why-header reveal">
+      <span class="section-label">Why Upgrade</span>
+      <h2>Digital Signs Outperform<br>Traditional Signage</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <span class="why-num">01</span>
+        <span class="why-icon">💡</span>
+        <h3>Eye-Catching Brightness</h3>
+        <p>Full-colour LED displays are dramatically brighter than painted signs, catching the eye of passing customers day or night — even in direct sunlight.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1">
+        <span class="why-num">02</span>
+        <span class="why-icon">🖥️</span>
+        <h3>Update Anytime, From Anywhere</h3>
+        <p>Change your message, prices, or promotions instantly from any laptop or tablet — no ladders, no printer, no weather delays. Your sign, your schedule.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-2">
+        <span class="why-num">03</span>
+        <span class="why-icon">📈</span>
+        <h3>Proven to Boost Revenue</h3>
+        <p>Studies show digital signs can increase revenue by up to 33%. A dynamic, professional display tells customers your business is modern, credible, and worth their time.</p>
+      </div>
+      <div class="why-card reveal">
+        <span class="why-num">04</span>
+        <span class="why-icon">🔋</span>
+        <h3>Energy Efficient</h3>
+        <p>LED technology uses a fraction of the power of older neon or fluorescent signs. Lower operating costs mean your sign pays for itself even faster.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-1">
+        <span class="why-num">05</span>
+        <span class="why-icon">🛡️</span>
+        <h3>Built to Last Ontario Winters</h3>
+        <p>Our signs are weatherproofed and built for Canadian climates — rain, snow, and -30°C. You get full warranty coverage and local support when you need it.</p>
+      </div>
+      <div class="why-card reveal reveal-delay-2">
+        <span class="why-num">06</span>
+        <span class="why-icon">🏆</span>
+        <h3>Outshine Your Competition</h3>
+        <p>If your competitor has a static sign, you automatically stand out. If they already have digital, you need one too — let us make sure yours is better.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- GALLERY -->
 <section id="gallery">
