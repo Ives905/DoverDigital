@@ -252,7 +252,17 @@ const state = {
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function esc(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function telHref(phone){ return (phone||'').replace(/[^\d+]/g, ''); }
+function splitPhoneExt(phone){
+  const s = (phone||'').trim();
+  const m = s.match(/^(.*?)\s*(?:extension|ext\.?|x)\s*[:#.]?\s*(\d+)\s*$/i);
+  if(m){ return { main: m[1].replace(/[^\d+]/g, ''), ext: m[2] }; }
+  return { main: s.replace(/[^\d+]/g, ''), ext: null };
+}
+function telHref(phone){
+  const p = splitPhoneExt(phone);
+  return p.ext ? `${p.main};${p.ext}` : p.main;
+}
+function smsNumber(phone){ return splitPhoneExt(phone).main; }
 function fmtDate(d){ if(!d) return ''; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function daysUntil(d){ const a = new Date(todayStr()+'T00:00:00'); const b = new Date(d+'T00:00:00'); return Math.round((b-a)/86400000); }
@@ -859,9 +869,9 @@ function navHtml(){
 
 function letterPlanViewHtml(){
   const letterQueue = state.customers.filter(c => c.pipeline_status === 'letter_queue')
-    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||''));
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
   const reminderList = state.customers.filter(c => c.pipeline_status === 'reminder_list')
-    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||''));
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
   return `
   <main>
     <div class="section-title">Letter List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— customers ready for Deb's form letter</span></div>
@@ -1067,7 +1077,7 @@ function customerDetailHtml(c){
             <div class="cname">${esc(ct.name)||'(no name)'}${ct.title ? ` <span style="font-weight:400; color:var(--muted);">— ${esc(ct.title)}</span>` : ''}</div>
             <div class="clinks">
               ${ct.phone ? `<a href="tel:${telHref(ct.phone)}">Call ${esc(ct.phone)}</a>` : ''}
-              ${ct.phone ? `<a href="sms:${telHref(ct.phone)}">Text</a>` : ''}
+              ${ct.phone ? `<a href="sms:${smsNumber(ct.phone)}">Text</a>` : ''}
               ${ct.email ? `<span class="clinks-email" data-copy-email="${esc(ct.email)}" style="cursor:pointer; background:#eef1f5; padding:3px 8px; border-radius:6px; font-size:12px; color:var(--navy);">${esc(ct.email)}</span>` : ''}
             </div>
           </div>
