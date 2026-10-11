@@ -1939,12 +1939,25 @@ function buildImportPlan(rows, hasHeader, mapping, existingCustomers){
   }
   return plan;
 }
+// Which already-existing customers (matched exactly) could be moved into the target folder?
+function planMoves(plan, folder, territoryId){
+  const seen = new Set(), toMove = [], inFolder = [], otherTerritory = [];
+  for(const x of plan.skippedExact){
+    const e = x.matched;
+    if(seen.has(e.id)) continue;
+    seen.add(e.id);
+    if(territoryId && e.territory_id && e.territory_id !== territoryId) otherTerritory.push(e);
+    else if((e.folder || '') === folder) inFolder.push(e);
+    else toMove.push(e);
+  }
+  return { toMove, inFolder, otherTerritory };
+}
 // ===== IMPORT TOOL: pure functions END =====
 
 // ===== IMPORT TOOL: screens and actions START =====
 function newImportState(){
   return { stage: 'pick', fileName: '', sheets: [], sheetIdx: 0, hasHeader: false, mapping: [], folder: '',
-           territory_id: '', includeDupes: false, busy: false, progress: '', error: null, result: null, createdIds: [], _count: 0 };
+           territory_id: '', includeDupes: false, moveExisting: false, busy: false, progress: '', error: null, result: null, createdIds: [], moved: [], _count: 0, _moveCount: 0 };
 }
 state.imp = newImportState();
 
@@ -1976,15 +1989,29 @@ function impCustomersToAdd(plan){
 function impSuggestFolder(fileName){
   return fileName.replace(/\.[^.]+$/, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
 }
+function impComputeCounts(){
+  const imp = state.imp;
+  const plan = impCurrentPlan();
+  const toAdd = plan ? impCustomersToAdd(plan) : [];
+  const mv = plan ? planMoves(plan, imp.folder.trim(), impTerritoryId()) : { toMove: [], inFolder: [], otherTerritory: [] };
+  imp._count = toAdd.length;
+  imp._moveCount = imp.moveExisting ? mv.toMove.length : 0;
+  return { plan, toAdd, mv };
+}
 function impRunButtonLabel(){
-  const imp = state.imp, folder = imp.folder.trim();
-  return imp._count > 0 ? `Import ${imp._count} customer${imp._count === 1 ? '' : 's'} into \u201c${folder || '\u2026'}\u201d` : 'Nothing to import';
+  const imp = state.imp, f = '\u201c' + (imp.folder.trim() || '\u2026') + '\u201d';
+  const n = imp._count, m = imp._moveCount;
+  if(n > 0 && m > 0) return `Import ${n} new and move ${m} existing into ${f}`;
+  if(n > 0) return `Import ${n} customer${n === 1 ? '' : 's'} into ${f}`;
+  if(m > 0) return `Move ${m} existing customer${m === 1 ? '' : 's'} into ${f}`;
+  return 'Nothing to import';
 }
 function impRefreshRunButton(){
   const btn = document.getElementById('impRunBtn');
   if(!btn) return;
   const imp = state.imp;
-  btn.disabled = !(imp._count > 0 && imp.folder.trim() && impTerritoryId() && !imp.busy);
+  impComputeCounts();
+  btn.disabled = !((imp._count > 0 || imp._moveCount > 0) && imp.folder.trim() && impTerritoryId() && !imp.busy);
   btn.textContent = impRunButtonLabel();
 }
 function impListHtml(items, render1, limit){
@@ -2058,11 +2085,10 @@ function importMapHtml(){
   const ncols = rows.reduce((m, r) => Math.max(m, r.length), 0);
   const start = imp.hasHeader ? 1 : 0;
   const preview = rows.slice(start, start + 6);
-  const plan = impCurrentPlan();
-  const toAdd = plan ? impCustomersToAdd(plan) : [];
+  const { plan, toAdd, mv } = impComputeCounts();
   const contactCount = toAdd.reduce((n, c) => n + c.contacts.length, 0);
-  imp._count = toAdd.length;
-  const canImport = toAdd.length > 0 && imp.folder.trim() && impTerritoryId() && !imp.busy;
+  const canImport = (imp._count > 0 || imp._moveCount > 0) && imp.folder.trim() && impTerritoryId() && !imp.busy;
+  const folderName = imp.folder.trim() || 'this folder';
   const options = sel => `<option value="">\u2014 ignore \u2014</option>` +
     IMPORT_FIELDS.map(f => `<option value="${f.key}" ${sel === f.key ? 'selected' : ''}>${f.label}</option>`).join('');
   const dis = imp.busy ? 'disabled' : '';
@@ -2104,8 +2130,15 @@ function importMapHtml(){
 
       ${!plan ? `<div class="errbox">Choose which column holds the company / church name, using the dropdowns above.</div>` : `
       <div style="background:#f8f6f0; border:1px solid var(--line); border-radius:8px; padding:12px 14px; font-size:13.5px; line-height:1.6;">
-        <div><strong>${toAdd.length}</strong> customer${toAdd.length === 1 ? '' : 's'} will be added, with <strong>${contactCount}</strong> contact${contactCount === 1 ? '' : 's'}.</div>
-        ${plan.skippedExact.length ? `<details style="margin-top:4px;"><summary style="cursor:pointer;">${plan.skippedExact.length} already in the CRM \u2014 skipped</summary>${impListHtml(plan.skippedExact, x => `<li>${esc(x.customer.company)} <span style="color:var(--muted);">\u2014 ${esc(x.customer.street)}</span></li>`)}</details>` : ''}
+        <div><strong>${toAdd.length}</strong> customer${toAdd.length === 1 ? '' : 's'} will be added, with <strong>${contactCount}</strong> contact${contactCount === 1 ? '' : 's'}.${imp._moveCount ? ` <strong>${imp._moveCount}</strong> existing customer${imp._moveCount === 1 ? '' : 's'} will be moved into the folder.` : ''}</div>
+        ${plan.skippedExact.length ? `<details style="margin-top:4px;"><summary style="cursor:pointer;">${plan.skippedExact.length} already in the CRM \u2014 ${imp.moveExisting && mv.toMove.length ? 'will not be added again' : 'skipped'}</summary>${impListHtml(plan.skippedExact, x => `<li>${esc(x.customer.company)} <span style="color:var(--muted);">\u2014 ${esc(x.customer.street)}${x.matched.folder ? ' \u00b7 now in \u201c' + esc(x.matched.folder) + '\u201d' : ' \u00b7 not in a folder'}</span></li>`)}</details>` : ''}
+        ${mv.toMove.length ? `<div style="margin:6px 0 4px; padding:8px 10px; background:#fff7e6; border:1px solid #f0d9a8; border-radius:6px;">
+            <label style="font-size:13.5px;"><input type="checkbox" id="impMoveExisting" ${imp.moveExisting ? 'checked' : ''} ${dis}> Also move the <strong>${mv.toMove.length}</strong> customer${mv.toMove.length === 1 ? '' : 's'} already in the CRM into \u201c${esc(folderName)}\u201d</label>
+            <div style="font-size:12px; color:var(--muted); margin:3px 0 0 22px;">A customer can only be in one folder, so they leave the folder they're in now. You can undo this afterwards.</div>
+            <details style="margin:4px 0 0 22px;"><summary style="cursor:pointer; font-size:12.5px;">See who would move</summary>${impListHtml(mv.toMove, e => `<li>${esc(e.company)} <span style="color:var(--muted);">\u2014 from ${e.folder ? '\u201c' + esc(e.folder) + '\u201d' : 'no folder'}</span></li>`)}</details>
+          </div>` : ''}
+        ${mv.inFolder.length ? `<div style="color:var(--muted); font-size:12.5px;">${mv.inFolder.length} of the existing customers ${mv.inFolder.length === 1 ? 'is' : 'are'} already in \u201c${esc(folderName)}\u201d.</div>` : ''}
+        ${mv.otherTerritory.length ? `<div style="color:var(--muted); font-size:12.5px;">${mv.otherTerritory.length} existing customer${mv.otherTerritory.length === 1 ? ' belongs' : 's belong'} to a different territory, so ${mv.otherTerritory.length === 1 ? 'it' : 'they'} won't be moved.</div>` : ''}
         ${plan.skippedPossible.length ? `<details style="margin-top:4px;" ${imp.includeDupes ? 'open' : ''}><summary style="cursor:pointer;">${plan.skippedPossible.length} look like customers already in the CRM \u2014 ${imp.includeDupes ? 'being added anyway' : 'skipped'}</summary>
             ${impListHtml(plan.skippedPossible, x => `<li>${esc(x.customer.company)} <span style="color:var(--muted);">\u2014 similar to \u201c${esc(x.matched.company)}\u201d at ${esc(x.customer.street)}</span></li>`)}
             <label style="font-size:12.5px; display:block; margin-top:6px;"><input type="checkbox" id="impIncludeDupes" ${imp.includeDupes ? 'checked' : ''} ${dis}> Add these anyway</label></details>` : ''}
@@ -2113,7 +2146,7 @@ function importMapHtml(){
         ${plan.ignored.length ? `<details style="margin-top:4px;"><summary style="cursor:pointer;">${plan.ignored.length} row${plan.ignored.length === 1 ? '' : 's'} ignored</summary>${impListHtml(plan.ignored, x => `<li>Row ${x.row}: ${esc(x.reason)} <span style="color:var(--muted);">\u2014 ${esc((x.text || '').slice(0, 80))}</span></li>`)}</details>` : ''}
       </div>`}
 
-      ${imp.error ? `<div class="errbox" style="margin-top:12px;">${esc(imp.error)}${imp.createdIds.length && !imp.busy ? ` <button class="btn danger small" id="impUndoBtn" style="margin-left:8px;">Undo what was added</button>` : ''}</div>` : ''}
+      ${imp.error ? `<div class="errbox" style="margin-top:12px;">${esc(imp.error)}${(imp.createdIds.length || imp.moved.length) && !imp.busy ? ` <button class="btn danger small" id="impUndoBtn" style="margin-left:8px;">Undo what was added</button>` : ''}</div>` : ''}
       ${imp.busy ? `<div style="margin-top:12px; font-size:13.5px;">${esc(imp.progress || 'Working\u2026')}</div>` : ''}
 
       <div class="row-actions" style="margin-top:16px;">
@@ -2125,18 +2158,19 @@ function importMapHtml(){
 }
 
 function importDoneHtml(){
-  const r = state.imp.result || { customers: 0, contacts: 0, folder: '' };
+  const r = state.imp.result || { customers: 0, contacts: 0, moved: 0, folder: '' };
   return `
   <main>
     <div class="card" style="padding:22px; max-width:760px; margin:0 auto;">
       <h2 style="margin:0 0 8px;">Import complete</h2>
-      <p style="font-size:14px; line-height:1.55;">Added <strong>${r.customers}</strong> customer${r.customers === 1 ? '' : 's'} and <strong>${r.contacts}</strong> contact${r.contacts === 1 ? '' : 's'} to \u201c${esc(r.folder)}\u201d.</p>
+      ${r.customers ? `<p style="font-size:14px; line-height:1.55; margin:0 0 6px;">Added <strong>${r.customers}</strong> customer${r.customers === 1 ? '' : 's'} and <strong>${r.contacts}</strong> contact${r.contacts === 1 ? '' : 's'} to \u201c${esc(r.folder)}\u201d.</p>` : ''}
+      ${r.moved ? `<p style="font-size:14px; line-height:1.55; margin:0 0 6px;">Moved <strong>${r.moved}</strong> existing customer${r.moved === 1 ? '' : 's'} into \u201c${esc(r.folder)}\u201d.</p>` : ''}
       <div class="row-actions" style="flex-wrap:wrap;">
         <button class="btn amber" id="impViewFolderBtn">View the folder</button>
         <button class="btn ghost" id="impAnotherBtn">Import another file</button>
         <button class="btn danger" id="impUndoBtn" ${state.imp.busy ? 'disabled' : ''}>Undo this import</button>
       </div>
-      <div style="font-size:12px; color:var(--muted); margin-top:10px;">Undo is available on this screen only \u2014 it removes just the customers added by this import.</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:10px;">Undo is available on this screen only \u2014 it removes just the customers this import added and puts moved customers back in their old folders.</div>
     </div>
   </main>`;
 }
@@ -2149,8 +2183,9 @@ async function runImport(){
   const toAdd = impCustomersToAdd(plan);
   const folder = imp.folder.trim();
   const territory_id = impTerritoryId();
-  if(!toAdd.length || !folder || !territory_id) return;
-  imp.busy = true; imp.error = null; imp.createdIds = []; imp.progress = 'Preparing\u2026'; render();
+  const moveRows = imp.moveExisting ? planMoves(plan, folder, territory_id).toMove : [];
+  if((!toAdd.length && !moveRows.length) || !folder || !territory_id) return;
+  imp.busy = true; imp.error = null; imp.createdIds = []; imp.moved = []; imp.progress = 'Preparing\u2026'; render();
 
   const custRows = [], contactRows = [];
   for(const c of toAdd){
@@ -2176,14 +2211,22 @@ async function runImport(){
       if(error) throw new Error(error.message);
       contactsAdded += chunk.length;
     }
+    for(let i = 0; i < moveRows.length; i += 100){
+      const chunk = moveRows.slice(i, i + 100);
+      imp.progress = `Moving existing customers\u2026 ${Math.min(i + 100, moveRows.length)} of ${moveRows.length}`; render();
+      const previous = chunk.map(c => ({ id: c.id, prev: c.folder || null }));   // remember BEFORE changing, so undo can restore it
+      const { error } = await sb.from('customers').update({ folder }).in('id', chunk.map(c => c.id));
+      if(error) throw new Error(error.message);
+      previous.forEach(p => imp.moved.push(p));
+    }
   } catch(e){
     imp.busy = false; imp.progress = '';
-    imp.error = `The import stopped part-way (${e.message}). ${imp.createdIds.length} customers and ${contactsAdded} contacts were saved before it stopped. You can undo what was added, or fix the problem and run the same file again \u2014 customers already added are skipped automatically.`;
+    imp.error = `The import stopped part-way (${e.message}). ${imp.createdIds.length} customers and ${contactsAdded} contacts were saved${imp.moved.length ? ' and ' + imp.moved.length + ' existing customers were moved' : ''} before it stopped. You can undo what was added, or fix the problem and run the same file again \u2014 customers already added are skipped automatically.`;
     await loadAll();
     return;
   }
   imp.busy = false; imp.progress = '';
-  imp.result = { customers: custRows.length, contacts: contactRows.length, folder };
+  imp.result = { customers: custRows.length, contacts: contactRows.length, moved: imp.moved.length, folder };
   imp.stage = 'done';
   await loadAll();
 }
@@ -2191,15 +2234,24 @@ async function runImport(){
 async function undoImport(){
   const imp = state.imp;
   const ids = imp.createdIds.slice();
-  if(!ids.length || imp.busy) return;
+  const moved = imp.moved.slice();
+  if((!ids.length && !moved.length) || imp.busy) return;
   imp.busy = true; imp.error = null; render();
+  const byPrev = new Map();
+  moved.forEach(m => { const k = m.prev === null ? '\u0000none' : m.prev; if(!byPrev.has(k)) byPrev.set(k, []); byPrev.get(k).push(m.id); });
+  for(const [k, list] of byPrev){
+    for(let i = 0; i < list.length; i += 100){
+      const { error } = await sb.from('customers').update({ folder: k === '\u0000none' ? null : k }).in('id', list.slice(i, i + 100));
+      if(error){ imp.busy = false; imp.error = 'Undo failed: ' + error.message; render(); return; }
+    }
+  }
   for(let i = 0; i < ids.length; i += 100){
     const { error } = await sb.from('customers').delete().in('id', ids.slice(i, i + 100));
     if(error){ imp.busy = false; imp.error = 'Undo failed: ' + error.message; render(); return; }
   }
   state.imp = newImportState();
   await loadAll();
-  showToast(`Import undone \u2014 ${ids.length} customers removed`);
+  showToast(`Import undone \u2014 ${ids.length} customers removed` + (moved.length ? `, ${moved.length} moved back` : ''));
 }
 
 function bindImportEvents(){
@@ -2225,13 +2277,15 @@ function bindImportEvents(){
   if(terr) terr.onchange = e => { imp.territory_id = e.target.value; impRefreshRunButton(); };
   const dupes = document.getElementById('impIncludeDupes');
   if(dupes) dupes.onchange = e => { imp.includeDupes = e.target.checked; render(); };
+  const mover = document.getElementById('impMoveExisting');
+  if(mover) mover.onchange = e => { imp.moveExisting = e.target.checked; render(); };
   const run = document.getElementById('impRunBtn');
   if(run) run.onclick = runImport;
   const cancel = document.getElementById('impCancelBtn');
   if(cancel) cancel.onclick = () => { state.imp = newImportState(); render(); };
   const undo = document.getElementById('impUndoBtn');
   if(undo) undo.onclick = () => {
-    if(confirm(`Remove the ${imp.createdIds.length} customers added by this import? This also removes their contacts, and any notes added to them since.`)) undoImport();
+    if(confirm((imp.createdIds.length ? `Remove the ${imp.createdIds.length} customers added by this import (and their contacts and any notes added since)? ` : '') + (imp.moved.length ? `Put ${imp.moved.length} moved customers back in their old folders?` : ''))) undoImport();
   };
   const viewFolder = document.getElementById('impViewFolderBtn');
   if(viewFolder) viewFolder.onclick = () => { state.folderFilter = (imp.result && imp.result.folder) || 'ALL'; state.view = 'customers'; state.selectedId = null; render(); };
