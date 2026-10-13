@@ -1103,6 +1103,8 @@ function customerDetailHtml(c){
       <button class="btn small" id="addContactBtn" data-cust="${c.id}">+ Add Contact</button>
     </div>
 
+    ${calculatorHtml(c)}
+
     <div class="section-title">Add an estimate</div>
     <div class="newnote">
       <textarea id="estimateText" placeholder="Estimate details, sign specs, pricing…"></textarea>
@@ -1259,6 +1261,7 @@ function folderFormModal(){
 function bindEvents(){
   bindHeaderEvents();
   bindImportEvents();
+  bindCalcEvents();
 
   document.querySelectorAll('nav button').forEach(b=>{
     b.onclick = () => {
@@ -2294,6 +2297,156 @@ function bindImportEvents(){
 }
 // ===== IMPORT TOOL: screens and actions END =====
 
+// ===== ESTIMATE CALCULATOR: pure functions START =====
+const ESTIMATE_RATES = {
+  frameInches: 3.5,          // frame adds this much TOTAL to width and to height
+  moduleWidthInches: 12.6,
+  moduleHeightInches: 6.3,
+  costPerModule: 78,
+  pricePerModule: 234,
+};
+// Works in whole tenths of an inch so the maths is exact (no 3.9999999 -> 3 surprises).
+function calcLedEstimate(widthIn, heightIn, doubleSided, rates){
+  rates = rates || ESTIMATE_RATES;
+  if(!isFinite(widthIn) || !isFinite(heightIn) || widthIn <= 0 || heightIn <= 0){
+    return { ok: false, reason: 'Enter the sign\u2019s width and height.' };
+  }
+  const t = v => Math.round(v * 10);
+  const W = t(widthIn), H = t(heightIn), F = t(rates.frameInches), MW = t(rates.moduleWidthInches), MH = t(rates.moduleHeightInches);
+  const usableW = W - F, usableH = H - F;
+  const cols = usableW > 0 ? Math.floor(usableW / MW) : 0;
+  const rows = usableH > 0 ? Math.floor(usableH / MH) : 0;
+  if(cols < 1 || rows < 1){
+    return { ok: false, cols, rows, usableW: usableW / 10, usableH: usableH / 10,
+      reason: 'Too small for a full module \u2014 after the ' + rates.frameInches + '" frame, the screen area has to be at least ' + rates.moduleWidthInches + '" \u00d7 ' + rates.moduleHeightInches + '".' };
+  }
+  const perBoard = cols * rows;
+  const boards = doubleSided ? 2 : 1;
+  const modules = perBoard * boards;
+  const overallW = cols * MW + F, overallH = rows * MH + F;
+  return {
+    ok: true, cols, rows, perBoard, boards, modules,
+    cost: modules * rates.costPerModule, price: modules * rates.pricePerModule,
+    usableW: usableW / 10, usableH: usableH / 10,
+    overallW: overallW / 10, overallH: overallH / 10,
+    spareW: (W - overallW) / 10, spareH: (H - overallH) / 10,
+  };
+}
+// "4x8", "4' x 8'", "48\" x 96\"", "96 x 48 in", "4 ft by 8 ft" -> { w, h, unit }.  The longer side is taken as the width.
+function parseSignSize(text){
+  const s = String(text || '').toLowerCase().replace(/[\u201c\u201d\u2033]/g, '"').replace(/[\u2018\u2019\u2032]/g, "'");
+  const m = s.match(/(\d+(?:\.\d+)?)\s*(?:'|ft|feet|foot|"|in(?:ch(?:es)?)?)?\s*(?:x|\u00d7|by|\*)\s*(\d+(?:\.\d+)?)/);
+  if(!m) return null;
+  const a = parseFloat(m[1]), b = parseFloat(m[2]);
+  if(!(a > 0) || !(b > 0)) return null;
+  let unit = null;
+  if(/'|\bft\b|feet|foot/.test(s)) unit = 'ft';
+  else if(/"|\bin\b|inch/.test(s)) unit = 'in';
+  if(!unit) unit = (a <= 20 && b <= 20) ? 'ft' : 'in';
+  return { w: Math.max(a, b), h: Math.min(a, b), unit };
+}
+function fmtInches(n){ return (Math.round(n * 10) / 10) + '"'; }
+function fmtMoney(n){ return '$' + Math.round(n).toLocaleString('en-CA'); }
+// ===== ESTIMATE CALCULATOR: pure functions END =====
+// ===== ESTIMATE CALCULATOR: screen and actions START =====
+state.calc = { custId: null, sizeText: '', w: '', h: '', unit: 'ft', double: false, prefilled: false };
+
+function calcEnsure(c){
+  const sizeText = c.size_of_existing_sign || '';
+  if(state.calc.custId === c.id && state.calc.sizeText === sizeText) return state.calc;
+  const p = parseSignSize(sizeText);
+  state.calc = { custId: c.id, sizeText, w: p ? String(p.w) : '', h: p ? String(p.h) : '', unit: p ? p.unit : 'ft', double: false, prefilled: !!p };
+  return state.calc;
+}
+function calcCompute(calc){
+  const k = calc.unit === 'ft' ? 12 : 1;
+  return calcLedEstimate(parseFloat(calc.w) * k, parseFloat(calc.h) * k, calc.double);
+}
+function calcResultHtml(calc){
+  const r = calcCompute(calc);
+  if(!r.ok) return `<div style="color:var(--muted); font-size:13px; margin-top:12px;">${esc(r.reason)}</div>`;
+  const line = (label, value) => `<div style="display:flex; justify-content:space-between; gap:12px; padding:3px 0; border-bottom:1px solid var(--line); font-size:13px;"><span style="color:var(--muted);">${label}</span><span style="text-align:right;">${value}</span></div>`;
+  return `
+  <div style="margin-top:12px;">
+    ${line('Screen area (sign size minus the ' + ESTIMATE_RATES.frameInches + '" frame)', fmtInches(r.usableW) + ' \u00d7 ' + fmtInches(r.usableH))}
+    ${line('Modules per board (' + ESTIMATE_RATES.moduleWidthInches + '" \u00d7 ' + ESTIMATE_RATES.moduleHeightInches + '")', r.cols + ' across \u00d7 ' + r.rows + ' down = <strong>' + r.perBoard + '</strong>')}
+    ${calc.double ? line('Boards', '2 (double sided)') + line('Total modules', '<strong>' + r.modules + '</strong>') : ''}
+    ${line('New sign size, frame included', fmtInches(r.overallW) + ' \u00d7 ' + fmtInches(r.overallH))}
+    ${line('Room to spare in the existing sign', fmtInches(r.spareW) + ' wide \u00d7 ' + fmtInches(r.spareH) + ' tall')}
+    <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:10px;">
+      <div style="font-size:12px; color:var(--muted);">${r.modules} modules \u00d7 ${fmtMoney(ESTIMATE_RATES.pricePerModule)}</div>
+      <div style="font-size:24px; font-weight:800;">${fmtMoney(r.price)}</div>
+    </div>
+    ${isAdmin() ? `<div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); margin-top:2px;"><span>Our cost: ${fmtMoney(r.cost)}</span><span>Margin: ${fmtMoney(r.price - r.cost)} (${Math.round((r.price - r.cost) / r.price * 1000) / 10}%)</span></div>` : ''}
+  </div>`;
+}
+function calculatorHtml(c){
+  const calc = calcEnsure(c);
+  const ok = calcCompute(calc).ok;
+  const inputStyle = 'width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:13.5px; background:#fff;';
+  return `
+    <div class="section-title">Estimate calculator <span style="font-weight:400; text-transform:none; letter-spacing:0;">\u2014 LED reader board</span></div>
+    <div class="newnote" id="calcBox">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div class="field" style="width:110px;"><label>Sign width</label><input id="calcW" type="number" step="any" min="0" inputmode="decimal" value="${esc(calc.w)}" style="${inputStyle}"></div>
+        <button class="btn ghost small" id="calcSwap" type="button" title="Swap width and height" style="margin-bottom:2px;">\u21c4</button>
+        <div class="field" style="width:110px;"><label>Sign height</label><input id="calcH" type="number" step="any" min="0" inputmode="decimal" value="${esc(calc.h)}" style="${inputStyle}"></div>
+        <div class="field" style="width:100px;"><label>Units</label>
+          <select id="calcUnit" style="${inputStyle}"><option value="ft" ${calc.unit === 'ft' ? 'selected' : ''}>feet</option><option value="in" ${calc.unit === 'in' ? 'selected' : ''}>inches</option></select>
+        </div>
+        <label style="font-size:13.5px; padding-bottom:7px;"><input type="checkbox" id="calcDouble" ${calc.double ? 'checked' : ''}> Double sided</label>
+      </div>
+      ${calc.prefilled ? `<div style="font-size:12px; color:var(--muted); margin-top:6px;">Filled in from the sign size on file (\u201c${esc(c.size_of_existing_sign)}\u201d). Check width and height are the right way around \u2014 it changes the module count. Use \u21c4 to swap.</div>` : ''}
+      <div id="calcResult">${calcResultHtml(calc)}</div>
+      <div class="row"><button class="btn" id="calcSaveBtn" data-cust="${c.id}" ${ok ? '' : 'disabled'}>Save as estimate</button></div>
+    </div>`;
+}
+function calcRefresh(){
+  const out = document.getElementById('calcResult');
+  if(out) out.innerHTML = calcResultHtml(state.calc);
+  const btn = document.getElementById('calcSaveBtn');
+  if(btn) btn.disabled = !calcCompute(state.calc).ok;
+}
+function calcSummaryText(calc, r){
+  const k = calc.unit === 'ft' ? 12 : 1;
+  const wIn = parseFloat(calc.w) * k, hIn = parseFloat(calc.h) * k;
+  const entered = calc.unit === 'ft' ? `${parseFloat(calc.w)} ft \u00d7 ${parseFloat(calc.h)} ft (${fmtInches(wIn)} \u00d7 ${fmtInches(hIn)})` : `${fmtInches(wIn)} \u00d7 ${fmtInches(hIn)}`;
+  const lines = [
+    `LED reader board \u2014 ${calc.double ? 'double sided' : 'single sided'}`,
+    `Existing sign: ${entered}`,
+    `Screen area after the ${ESTIMATE_RATES.frameInches}" frame: ${fmtInches(r.usableW)} \u00d7 ${fmtInches(r.usableH)}`,
+    `Modules (${ESTIMATE_RATES.moduleWidthInches}" \u00d7 ${ESTIMATE_RATES.moduleHeightInches}"): ${r.cols} across \u00d7 ${r.rows} down = ${r.perBoard} per board`,
+  ];
+  if(calc.double) lines.push(`Boards: 2 \u2192 ${r.modules} modules total`);
+  lines.push(`New sign size, frame included: ${fmtInches(r.overallW)} \u00d7 ${fmtInches(r.overallH)}`);
+  lines.push(`Price: ${fmtMoney(r.price)} (${r.modules} modules \u00d7 ${fmtMoney(ESTIMATE_RATES.pricePerModule)})`);
+  return lines.join('\n');
+}
+async function saveCalcEstimate(custId){
+  const calc = state.calc, r = calcCompute(calc);
+  if(!r.ok) return;
+  await addEstimate(custId, { estimate_text: calcSummaryText(calc, r), date_of_estimate: todayStr(), photos: [] });
+}
+function bindCalcEvents(){
+  if(!document.getElementById('calcBox')) return;
+  const calc = state.calc;
+  document.getElementById('calcW').oninput = e => { calc.w = e.target.value; calcRefresh(); };
+  document.getElementById('calcH').oninput = e => { calc.h = e.target.value; calcRefresh(); };
+  document.getElementById('calcDouble').onchange = e => { calc.double = e.target.checked; calcRefresh(); };
+  document.getElementById('calcUnit').onchange = e => {
+    const to = e.target.value;
+    if(to !== calc.unit){
+      const f = to === 'in' ? 12 : 1 / 12;
+      for(const k of ['w', 'h']){ const n = parseFloat(calc[k]); if(isFinite(n)) calc[k] = String(Math.round(n * f * 1000) / 1000); }
+      calc.unit = to;
+    }
+    render();
+  };
+  document.getElementById('calcSwap').onclick = () => { const t = calc.w; calc.w = calc.h; calc.h = t; render(); };
+  const save = document.getElementById('calcSaveBtn');
+  if(save) save.onclick = () => saveCalcEstimate(save.dataset.cust);
+}
+// ===== ESTIMATE CALCULATOR: screen and actions END =====
 boot();
 </script>
 
