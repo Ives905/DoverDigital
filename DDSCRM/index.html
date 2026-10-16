@@ -104,6 +104,11 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   .btn.small{ padding:5px 10px; font-size:12.5px; }
   .btn.danger{ background:transparent; color:var(--overdue); border:1px solid rgba(217,84,42,.4);}
   .btn:disabled{ opacity:.6; cursor:default; }
+  .btn.on{ background:var(--amber); color:#3a2a06; border:1px solid var(--amber); box-shadow:var(--amber-glow); }
+  .listbar{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0 6px; }
+  .listbar .btn{ padding:10px 8px; font-size:13px; text-align:center; }
+  .listnote{ font-size:12.5px; color:var(--muted); margin:0 0 12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  @media (max-width:560px){ .listbar{ grid-template-columns:repeat(2,1fr); } }
   a.btn{ display:inline-block; text-decoration:none; }
 
   main{ padding:18px 22px 60px; max-width:1180px; margin:0 auto; }
@@ -257,6 +262,7 @@ const state = {
   addingCustomer: false,
   editingCustomer: false,
   addingFolder: false,
+  lpList: 'go_measure',
 };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -630,6 +636,75 @@ async function saveProfile(id, data){
   render();
   showToast('Team member updated');
 }
+// ===== LETTER LISTS: the four buttons at the top of a customer page =====
+const LIST_DEFS = [
+  { key: 'go_measure',      button: 'Go Measure',         title: 'Go Measure',         blurb: 'working list of customers to go and measure',                                      letter: false, sentName: '' },
+  { key: 'no_signage',      button: 'No Signage Letter',  title: 'No Signage Letter',  blurb: 'churches with no signage \u2014 reach out about putting in signage',                letter: true,  sentName: 'No Signage' },
+  { key: 'has_digital',     button: 'Has Digital Letter', title: 'Has Digital Letter', blurb: '\u201ctry us next time\u201d letter \u2014 we service other boards too',            letter: true,  sentName: 'Has Digital' },
+  { key: 'estimate_letter', button: 'Estimate Letter',    title: 'Estimate Letter',    blurb: 'assures the estimate letter we leave in their mailbox reaches them',               letter: true,  sentName: 'Estimate' },
+];
+function listDefFor(status){ return LIST_DEFS.find(d => d.key === status) || null; }
+function isListStatus(status){ return !!listDefFor(status); }
+function listLabel(status){
+  if(status === 'letter_queue') return 'Letter List';
+  if(status === 'reminder_list') return 'Reminder List';
+  const d = listDefFor(status);
+  return d ? d.title + ' list' : 'list';
+}
+function oneLineAddress(c){
+  const line = [c.company, c.street, c.city, c.postal_code].map(x => (x || '').trim()).filter(Boolean).join(', ');
+  return line || '(no name)';
+}
+function listCustomers(status){
+  return state.customers.filter(c => c.pipeline_status === status)
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+}
+async function copyTextToClipboard(text){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); return true; }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+function listButtonsHtml(c){
+  const cur = c.pipeline_status;
+  const curDef = listDefFor(cur);
+  const since = c.pipeline_status_at ? ' since ' + fmtDate(c.pipeline_status_at.slice(0,10)) : '';
+  return `
+    <div class="listbar">
+      ${LIST_DEFS.map(d => `<button class="btn ${cur === d.key ? 'on' : 'ghost'}" data-list-btn="${d.key}" data-cust="${c.id}" title="${cur === d.key ? 'On this list \u2014 click to remove' : 'Add to the ' + esc(d.title) + ' list'}">${esc(d.button)}</button>`).join('')}
+    </div>
+    ${curDef ? `<div class="listnote">
+        <span>On the <strong>${esc(curDef.title)}</strong> list${esc(since)}.</span>
+        ${curDef.letter ? `<button class="btn small" data-mark-list-sent="${c.id}">Mark Letter Sent</button>` : ''}
+        <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove from List</button>
+      </div>` : ''}`;
+}
+function onListButton(custId, key){
+  const c = state.customers.find(x => x.id === custId);
+  const def = listDefFor(key);
+  if(!c || !def) return;
+  if(c.pipeline_status === key){
+    if(confirm('Remove this customer from the ' + def.title + ' list?')) setPipelineStatus(custId, null, null);
+    return;
+  }
+  if(c.pipeline_status){
+    if(!confirm('This customer is on the ' + listLabel(c.pipeline_status) + ' right now. Move them to the ' + def.title + ' list instead?')) return;
+  }
+  setPipelineStatus(custId, key, 'Added to the ' + def.title + ' list.');
+}
+function onMarkListSent(custId){
+  const c = state.customers.find(x => x.id === custId);
+  const def = c ? listDefFor(c.pipeline_status) : null;
+  if(!c || !def || !def.letter) return;
+  setPipelineStatus(custId, 'reminder_list', def.sentName + ' letter sent \u2014 added to the 3x/year reminder email list.');
+}
 async function setPipelineStatus(custId, status, autoNoteText){
   const payload = { pipeline_status: status, pipeline_status_at: status ? new Date().toISOString() : null };
   const { error } = await sb.from('customers').update(payload).eq('id', custId);
@@ -880,12 +955,48 @@ function navHtml(){
 }
 
 function letterPlanViewHtml(){
-  const letterQueue = state.customers.filter(c => c.pipeline_status === 'letter_queue')
-    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
-  const reminderList = state.customers.filter(c => c.pipeline_status === 'reminder_list')
-    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+  const sel = state.lpList || 'go_measure';
+  const tabs = [...LIST_DEFS.map(d => ({ key: d.key, label: d.title })), { key: 'letter_queue', label: 'Letter List' }, { key: 'reminder_list', label: 'Reminder List' }];
+  const count = k => state.customers.filter(c => c.pipeline_status === k).length;
+  const chips = `<div class="folder-chips" style="padding:12px 0 16px;">${tabs.map(t => `<span class="folder-chip ${sel === t.key ? 'active' : ''}" data-lp-tab="${t.key}">${esc(t.label)} \u00b7 ${count(t.key)}</span>`).join('')}</div>`;
+  const def = listDefFor(sel);
+  const body = def ? pipelineListHtml(def) : (sel === 'reminder_list' ? reminderSectionHtml() : letterQueueSectionHtml());
   return `
   <main>
+    ${chips}
+    ${body}
+  </main>`;
+}
+
+function pipelineListHtml(def){
+  const list = listCustomers(def.key);
+  return `
+    <div class="section-title">${esc(def.title)} <span style="font-weight:400; text-transform:none; letter-spacing:0;">\u2014 ${esc(def.blurb)}</span></div>
+    <div class="toolbar" style="padding:0 0 12px;">
+      <button class="btn ghost" data-copy-list="${def.key}">Copy List</button>
+      <button class="btn ghost" data-export-list="${def.key}">Export CSV</button>
+    </div>
+    <div class="card">
+      ${list.length === 0 ? `<div class="empty">Nobody on the ${esc(def.title)} list yet. Use the \u201c${esc(def.button)}\u201d button at the top of a customer's page.</div>` :
+        list.map(c => `
+        <div class="followup-row">
+          <div class="co" data-goto-cust="${c.id}" style="cursor:pointer;"><span class="oneline">${esc(oneLineAddress(c))}</span>
+            <span style="font-weight:400; color:var(--muted); font-size:12px;"> \u00b7 since ${c.pipeline_status_at ? fmtDate(c.pipeline_status_at.slice(0,10)) : '\u2014'}</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            ${def.letter ? `<button class="btn small" data-mark-list-sent="${c.id}">Mark Letter Sent</button>` : ''}
+            <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function letterQueueSectionHtml(){
+  const letterQueue = state.customers.filter(c => c.pipeline_status === 'letter_queue')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+  const _unusedReminder = state.customers.filter(c => c.pipeline_status === 'reminder_list')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+  return `
     <div class="section-title">Letter List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— customers ready for Deb's form letter</span></div>
     <div class="toolbar" style="padding:0 0 12px;">
       <button class="btn ghost" id="exportLetterListBtn">Export CSV</button>
@@ -901,7 +1012,15 @@ function letterPlanViewHtml(){
           </div>
         </div>`).join('')}
     </div>
+`;
+}
 
+function reminderSectionHtml(){
+  const letterQueue = state.customers.filter(c => c.pipeline_status === 'letter_queue')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+  const reminderList = state.customers.filter(c => c.pipeline_status === 'reminder_list')
+    .sort((a,b)=> (a.pipeline_status_at||'').localeCompare(b.pipeline_status_at||'') || (a.company||'').localeCompare(b.company||''));
+  return `
     <div class="section-title">Reminder List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— gets a check-in email 3x a year</span></div>
     <div class="toolbar" style="padding:0 0 12px;">
       <button class="btn ghost" id="exportReminderListBtn">Export Emails (CSV)</button>
@@ -915,8 +1034,7 @@ function letterPlanViewHtml(){
           </div>
           <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove</button>
         </div>`).join('')}
-    </div>
-  </main>`;
+    </div>`;
 }
 
 function teamViewHtml(){
@@ -1047,6 +1165,7 @@ function customerDetailHtml(c){
         <button class="btn danger small" data-del-cust="${c.id}">Delete</button>
       </div>
     </div>
+    ${listButtonsHtml(c)}
     <div class="grid2" style="margin-top:8px;">
       <div>
         <span class="tag">${esc(territoryNameFor(c.territory_id))}</span>
@@ -1068,6 +1187,7 @@ function customerDetailHtml(c){
       <button class="btn small" id="assignFolderBtn" data-cust="${c.id}">Add to Folder</button>
     </div>
 
+    ${isListStatus(c.pipeline_status) ? '' : `
     <div class="row-actions" style="align-items:center; margin-bottom:14px; flex-wrap:wrap;">
       ${c.pipeline_status === 'letter_queue' ? `
         <span class="tag" style="background:#fff7e6; color:#8a5a00;">In Letter List</span>
@@ -1080,6 +1200,7 @@ function customerDetailHtml(c){
         <button class="btn small" data-send-letter-list="${c.id}">Send to Letter List</button>
       `}
     </div>
+    `}
 
     <div class="section-title">Contacts</div>
     ${contacts.length===0 ? `<div class="empty" style="padding:14px;">No contacts added yet.</div>` :
@@ -1434,6 +1555,32 @@ function bindEvents(){
       exportCustomersToCSV(list, 'Letter List.csv');
     };
   }
+
+  document.querySelectorAll('[data-list-btn]').forEach(el=>{
+    el.onclick = (e) => { e.stopPropagation(); onListButton(el.dataset.cust, el.dataset.listBtn); };
+  });
+  document.querySelectorAll('[data-mark-list-sent]').forEach(el=>{
+    el.onclick = (e) => { e.stopPropagation(); onMarkListSent(el.dataset.markListSent); };
+  });
+  document.querySelectorAll('[data-lp-tab]').forEach(el=>{
+    el.onclick = () => { state.lpList = el.dataset.lpTab; render(); };
+  });
+  document.querySelectorAll('[data-copy-list]').forEach(el=>{
+    el.onclick = async () => {
+      const list = listCustomers(el.dataset.copyList);
+      if(!list.length){ showToast('Nothing on this list yet'); return; }
+      const ok = await copyTextToClipboard(list.map(oneLineAddress).join('\n'));
+      showToast(ok ? 'Copied ' + list.length + ' customer' + (list.length === 1 ? '' : 's') + ' \u2014 paste anywhere' : "Couldn't copy \u2014 try Export CSV instead");
+    };
+  });
+  document.querySelectorAll('[data-export-list]').forEach(el=>{
+    el.onclick = () => {
+      const def = listDefFor(el.dataset.exportList);
+      const list = listCustomers(el.dataset.exportList);
+      if(!list.length){ showToast('Nothing on this list yet'); return; }
+      exportCustomersToCSV(list, (def ? def.title : 'List') + ' List.csv');
+    };
+  });
 
   document.querySelectorAll('[data-goto-cust]').forEach(el=>{
     el.onclick = () => { state.view='customers'; state.selectedId = el.dataset.gotoCust; render(); };
