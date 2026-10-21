@@ -263,6 +263,8 @@ const state = {
   editingCustomer: false,
   addingFolder: false,
   lpList: 'go_measure',
+  listScroll: 0,   // how far the customer list was scrolled (kept while the list is hidden behind a customer on a phone)
+  listScrollReset: false,
 };
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -719,12 +721,20 @@ async function setPipelineStatus(custId, status, autoNoteText){
 }
 
 // ---------- render ----------
+// The customer list is the one inside the .layout wrapper (the Folders tab has its own, separate list)
+function customerListEl(){ return document.querySelector('.layout > .list'); }
+// Call this when the list is about to show something different (e.g. another folder) so it starts at the top
+function resetListScroll(){ state.listScroll = 0; state.listScrollReset = true; }
 function render(){
-  const existingList = document.querySelector('.list');
-  const savedScroll = existingList ? existingList.scrollTop : 0;
+  // Remember how far the customer list is scrolled - but only while it is actually on screen.
+  // On a phone the list is hidden while a customer is open, and a hidden list always reads 0,
+  // which is what used to send "Back to list" to the top.
+  const existingList = customerListEl();
+  if(state.listScrollReset){ state.listScrollReset = false; }
+  else if(existingList && getComputedStyle(existingList).display !== 'none'){ state.listScroll = existingList.scrollTop; }
   renderInner();
-  const newList = document.querySelector('.list');
-  if(newList) newList.scrollTop = savedScroll;
+  const newList = customerListEl();
+  if(newList && getComputedStyle(newList).display !== 'none') newList.scrollTop = state.listScroll;
 }
 function renderInner(){
   const root = document.getElementById('root');
@@ -1411,7 +1421,7 @@ function bindEvents(){
     };
   }
   document.querySelectorAll('.folder-chip').forEach(el=>{
-    el.onclick = () => { state.folderFilter = el.dataset.folder; render(); };
+    el.onclick = () => { state.folderFilter = el.dataset.folder; resetListScroll(); render(); };
   });
   const newFolderBtn = document.getElementById('newFolderBtn');
   if(newFolderBtn){ newFolderBtn.onclick = () => { state.addingFolder = true; render(); }; }
@@ -1462,7 +1472,7 @@ function bindEvents(){
     el.onclick = () => { state.selectedId = el.dataset.id; render(); };
   });
   document.querySelectorAll('.cust-item[data-folder]').forEach(el=>{
-    el.onclick = () => { state.folderFilter = el.dataset.folder; state.view = 'customers'; state.selectedId = null; render(); };
+    el.onclick = () => { state.folderFilter = el.dataset.folder; resetListScroll(); state.view = 'customers'; state.selectedId = null; render(); };
   });
   document.querySelectorAll('[data-export-folder]').forEach(el=>{
     el.onclick = (e) => {
@@ -2438,7 +2448,7 @@ function bindImportEvents(){
     if(confirm((imp.createdIds.length ? `Remove the ${imp.createdIds.length} customers added by this import (and their contacts and any notes added since)? ` : '') + (imp.moved.length ? `Put ${imp.moved.length} moved customers back in their old folders?` : ''))) undoImport();
   };
   const viewFolder = document.getElementById('impViewFolderBtn');
-  if(viewFolder) viewFolder.onclick = () => { state.folderFilter = (imp.result && imp.result.folder) || 'ALL'; state.view = 'customers'; state.selectedId = null; render(); };
+  if(viewFolder) viewFolder.onclick = () => { state.folderFilter = (imp.result && imp.result.folder) || 'ALL'; resetListScroll(); state.view = 'customers'; state.selectedId = null; render(); };
   const another = document.getElementById('impAnotherBtn');
   if(another) another.onclick = () => { state.imp = newImportState(); render(); };
 }
