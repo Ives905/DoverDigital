@@ -659,7 +659,10 @@ function telHref(phone){
 }
 function smsNumber(phone){ return splitPhoneExt(phone).main; }
 function fmtDate(d){ if(!d) return ''; const dt = new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'}); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
+function localYmd(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+// Today's date where the user is. (The old version used the UTC date, which flips to "tomorrow" after about 8 pm in Ontario.)
+function todayStr(){ return localYmd(new Date()); }
+function addDaysStr(dateStr, n){ const [y, m, d] = dateStr.split('-').map(Number); return localYmd(new Date(y, m - 1, d + n)); }
 function daysUntil(d){ const a = new Date(todayStr()+'T00:00:00'); const b = new Date(d+'T00:00:00'); return Math.round((b-a)/86400000); }
 function showToast(msg){ state.toast = msg; render(); setTimeout(()=>{ state.toast=null; render(); }, 2600); }
 function toastHtml(){ return state.toast ? `<div class="toast">${esc(state.toast)}</div>` : ''; }
@@ -1021,7 +1024,7 @@ const LIST_DEFS = [
   { key: 'go_measure',      button: 'Go Measure',         title: 'Go Measure',         blurb: 'working list of customers to go and measure',                                      letter: false, sentName: '' },
   { key: 'no_signage',      button: 'No Signage Letter',  title: 'No Signage Letter',  blurb: 'churches with no signage \u2014 reach out about putting in signage',                letter: true,  sentName: 'No Signage' },
   { key: 'has_digital',     button: 'Has Digital Letter', title: 'Has Digital Letter', blurb: '\u201ctry us next time\u201d letter \u2014 we service other boards too',            letter: true,  sentName: 'Has Digital' },
-  { key: 'estimate_letter', button: 'Estimate Letter',    title: 'Estimate Letter',    blurb: 'preliminary estimate letter \u2014 measured sign, proposed digital board and price',  letter: true,  sentName: 'Estimate' },
+  { key: 'estimate_letter', button: 'Estimate Letter',    title: 'Estimate Letter',    blurb: 'preliminary estimate letter \u2014 measured sign, proposed digital board and price',  letter: true,  sentName: 'Estimate', followUpDays: 7 },
 ];
 function listDefFor(status){ return LIST_DEFS.find(d => d.key === status) || null; }
 function isListStatus(status){ return !!listDefFor(status); }
@@ -1084,19 +1087,24 @@ function onMarkListSent(custId){
   const c = state.customers.find(x => x.id === custId);
   const def = c ? listDefFor(c.pipeline_status) : null;
   if(!c || !def || !def.letter) return;
+  if(def.followUpDays){       // e.g. the Estimate letter: off the lists, and into Follow-Ups a week later
+    const due = addDaysStr(todayStr(), def.followUpDays);
+    setPipelineStatus(custId, null, def.sentName + ' letter sent \u2014 follow up in ' + def.followUpDays + ' days.', due, 'Follow-up set for ' + fmtDate(due));
+    return;
+  }
   setPipelineStatus(custId, 'reminder_list', def.sentName + ' letter sent \u2014 added to the 3x/year reminder email list.');
 }
-async function setPipelineStatus(custId, status, autoNoteText){
+async function setPipelineStatus(custId, status, autoNoteText, followUpDate, doneToast){
   const payload = { pipeline_status: status, pipeline_status_at: status ? new Date().toISOString() : null };
   const { error } = await sb.from('customers').update(payload).eq('id', custId);
   if(error){ showToast('Update failed: ' + error.message); return; }
   const c = state.customers.find(c=>c.id===custId);
   if(c) Object.assign(c, payload);
   if(autoNoteText){
-    await addNote(custId, { note_text: autoNoteText, date_of_note: todayStr(), follow_up_date: null, photos: [] });
+    await addNote(custId, { note_text: autoNoteText, date_of_note: todayStr(), follow_up_date: followUpDate || null, photos: [] });
   }
   render();
-  showToast('Updated');
+  showToast(doneToast || 'Updated');
 }
 
 // ---------- render ----------
@@ -1361,6 +1369,7 @@ function pipelineListHtml(def){
   const list = listCustomers(def.key);
   return `
     <div class="section-title">${esc(def.title)} <span style="font-weight:400; text-transform:none; letter-spacing:0;">\u2014 ${esc(def.blurb)}</span></div>
+    ${def.letter ? `<div style="font-size:12.5px; color:var(--muted); margin:-4px 0 10px;">${def.followUpDays ? `Mark Letter Sent takes the customer off this list and sets a follow-up for ${def.followUpDays} days later.` : 'Mark Letter Sent moves the customer to the Reminder List (the 3x/year emails).'}</div>` : ''}
     <div class="toolbar" style="padding:0 0 12px;">
       <button class="btn ghost" data-copy-list="${def.key}">Copy List</button>
       <button class="btn ghost" data-export-list="${def.key}">Export CSV</button>
@@ -2994,9 +3003,12 @@ const LETTER_SETTINGS = {
   senderTitle: 'Owner',
   phone: '905-906-3900',
   website: 'www.doverdigitalsigns.com',
-  // Printed in the top-left corner of envelopes, one string per line. NOT SET YET - until it is filled in,
-  // envelopes only show the company name. Example: ['Dover Digital Signs', '123 Example St', 'Port Dover, ON  N0A 1N0']
-  returnAddress: [],
+  // Printed in the top-left corner of envelopes, one string per line.
+  returnAddress: ['Dover Digital Signs', 'PO Box 161', 'Port Dover, ON, N0A 1N0'],
+  // Where the return address starts on the envelope, in points (72 points = 1 inch) from the left and top edges.
+  // Move it right/down if your printer clips it, left/up if it sits too far in.
+  returnAddressX: 72,
+  returnAddressY: 42,
 };
 
 // Which list each letter belongs to. {org} = the customer's name, {price} = the estimate price.
@@ -3006,8 +3018,8 @@ const LETTER_TEMPLATES = {
     re: 'A digital sign proposal for {org}',
     fields: ['price'],
     blocks: [
-      { t: 'p', text: 'We recently reviewed the signage at {org}, and we see a clear opportunity to make your location easier to identify and to communicate with the people who pass by.' },
-      { t: 'p', text: 'Rather than modifying what you have now, we suggest a simple, affordable starting point:' },
+      { t: 'p', text: 'We recently passed by {org} and noticed that your location does not currently have a sign. A good sign helps new visitors find you, and lets you share service times and events with everyone who passes by.' },
+      { t: 'p', text: 'We would like to suggest a simple, affordable starting point:' },
       { t: 'ul', items: ["Digital message board, approximately 6' x 3'", "Matching illuminated sign box, 6' x 18\", displaying {org}"] },
       { t: 'b', text: 'Estimated investment: {price}' },
       { t: 'p', text: 'Together they form a complete sign: your name permanently lit above, and a digital display below for messages you can change whenever you need to.' },
@@ -3195,7 +3207,7 @@ function makeEnvelopesPdf(rows){      // standard #10 business envelope: 9.5" x 
   rows.forEach((row, i) => {
     if(i > 0) doc.addPage([W, H], 'landscape');
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    (S.returnAddress.length ? S.returnAddress : [S.company]).forEach((l, j) => doc.text(l, 36, 42 + j * 11));
+    (S.returnAddress.length ? S.returnAddress : [S.company]).forEach((l, j) => doc.text(l, S.returnAddressX, S.returnAddressY + j * 11));
     const lines = [row.contactName, row.org, row.street, [row.city.toUpperCase(), row.prov].filter(Boolean).join(' ') + (row.postal ? '  ' + row.postal : '')]
       .filter(l => l && l.trim()).map(l => l.toUpperCase());            // all capitals is what Canada Post's sorting machines read best
     doc.setFontSize(12);
@@ -3238,7 +3250,7 @@ function printDialogHtml(){
     <div class="modal wide">
       <h3>Print \u2014 ${esc(def ? def.title : tpl.name)}</h3>
       <div style="font-size:12.5px; color:var(--muted); margin:-4px 0 10px;">
-        Each letter is filled in from the customer's record. Tick who to include, fix anything flagged, then download. Downloading doesn't change the list \u2014 use <strong>Mark Letter Sent</strong> after they're mailed.
+        Each letter is filled in from the customer's record. Tick who to include, fix anything flagged, then download. Downloading doesn't change the list \u2014 use <strong>Mark Letter Sent</strong> after they're mailed${def && def.followUpDays ? ' (that also sets a follow-up for ' + def.followUpDays + ' days later)' : ''}.
         ${LETTER_SETTINGS.returnAddress.length ? '' : '<br><strong>Return address not set yet</strong> \u2014 envelopes will show only \u201c' + esc(LETTER_SETTINGS.company) + '\u201d in the corner.'}
       </div>
       ${d.single ? '' : '<div style="margin:0 0 8px; font-size:13px;"><label><input type="checkbox" id="pdAll"> Tick all</label></div>'}
