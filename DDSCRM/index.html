@@ -1399,6 +1399,7 @@ function letterQueueSectionHtml(){
     <div class="section-title">Letter List <span style="font-weight:400; text-transform:none; letter-spacing:0;">— customers ready for Deb's form letter</span></div>
     <div class="toolbar" style="padding:0 0 12px;">
       <button class="btn ghost" id="exportLetterListBtn">Export CSV</button>
+      <button class="btn amber" data-open-print="letter_queue">Print Letters &amp; Envelopes</button>
     </div>
     <div class="card" style="margin-bottom:24px;">
       ${letterQueue.length===0 ? `<div class="empty">Nobody in the letter queue right now.</div>` :
@@ -1591,6 +1592,7 @@ function customerDetailHtml(c){
       ${c.pipeline_status === 'letter_queue' ? `
         <span class="tag" style="background:#fff7e6; color:#8a5a00;">In Letter List</span>
         <button class="btn small" data-mark-letter-sent="${c.id}">Mark Letter Sent</button>
+        <button class="btn ghost small" data-open-print="letter_queue" data-print-cust="${c.id}">Print Letter</button>
         <button class="btn ghost small" data-clear-pipeline="${c.id}">Remove from List</button>
       ` : c.pipeline_status === 'reminder_list' ? `
         <span class="tag" style="background:#eaf3ee; color:var(--good);">On Reminder List${c.pipeline_status_at ? ' since ' + fmtDate(c.pipeline_status_at.slice(0,10)) : ''}</span>
@@ -3013,6 +3015,19 @@ const LETTER_SETTINGS = {
 
 // Which list each letter belongs to. {org} = the customer's name, {price} = the estimate price.
 const LETTER_TEMPLATES = {
+  letter_queue: {
+    name: 'Checking In',
+    re: 'Checking in and thank you from Dover Digital Signs',
+    fields: [],
+    blocks: [
+      { t: 'p', text: 'Over the past few months, our team has reached out to you several times from Dover Digital Signs. Whether we connected for a brief conversation or simply left a voicemail on a busy day, thank you for your time and patience.' },
+      { t: 'p', text: 'I also want to let you know that we recently lost a large part of our customer notes and contact records. If we have already discussed a project with you, please accept my apologies if I am missing any of the details.' },
+      { t: 'p', text: 'Should you be in the market for an outdoor digital message board, or any type of digital visual communication, we would be glad to help. Send us a written quote for a comparable product, and we will beat it by 5%.' },
+      { t: 'p', text: 'We would welcome the chance to pick up the conversation whenever the timing is right for you. A few reasons to keep Dover Digital Signs in mind:' },
+      { t: 'ul', items: ['Factory-direct pricing', 'Digital signage is all we do', 'Quality products', 'Service and support for everything we sell'] },
+      { t: 'p', text: 'To arrange a short call, please contact me directly at {phone}. Wishing you and your team all the best.' },
+    ],
+  },
   no_signage: {
     name: 'No Signage',
     re: 'A digital sign proposal for {org}',
@@ -3248,7 +3263,7 @@ function printDialogHtml(){
   return `
   <div class="modal-bg" id="printDlgBg">
     <div class="modal wide">
-      <h3>Print \u2014 ${esc(def ? def.title : tpl.name)}</h3>
+      <h3>Print \u2014 ${esc(def ? def.title : listLabel(d.key))}</h3>
       <div style="font-size:12.5px; color:var(--muted); margin:-4px 0 10px;">
         Each letter is filled in from the customer's record. Tick who to include, fix anything flagged, then download. Downloading doesn't change the list \u2014 use <strong>Mark Letter Sent</strong> after they're mailed${def && def.followUpDays ? ' (that also sets a follow-up for ' + def.followUpDays + ' days later)' : ''}.
         ${LETTER_SETTINGS.returnAddress.length ? '' : '<br><strong>Return address not set yet</strong> \u2014 envelopes will show only \u201c' + esc(LETTER_SETTINGS.company) + '\u201d in the corner.'}
